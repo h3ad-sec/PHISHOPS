@@ -4,32 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PHISHOPS SCAN - Automated Phishing Analysis // H3AD-SEC</title>
-  <meta name="description" content="PHISHOPS Auto-Scan: provide sender, URLs, and hash — the tool enriches via VirusTotal, URLScan, and RDAP and returns a full investigation report." />
+  <meta name="description" content="PHISHOPS Auto-Scan: drop an EML file or paste raw email — auto-parses headers, extracts IOCs, computes attachment SHA256, enriches via VirusTotal, URLScan, and RDAP." />
   <link rel="icon" href="https://h3ad-sec.github.io/fevicon.png?v=2026" type="image/png" />
   <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
   <style>
-    :root {
-      --bg:#080c14;--panel:#0d1117;--panel-alt:#111827;--surface:#18253a;
-      --text:#e6edf3;--text-dim:#96b0cc;--muted:#6b7280;--muted-dim:#3a5470;
-      --accent:#00d4ff;--accent2:#58a6ff;--border:#1c2333;--border-dim:#111827;
-      --primary:#00d4ff;--primary-dim:rgba(0,212,255,0.08);--primary-glow:rgba(0,212,255,0.18);
-      --warn:#f59e0b;--warn-dim:rgba(245,158,11,0.10);--nav-h:48px;--mode-h:36px;
-    }
-    body.light{
-      --bg:#f8fafc;--panel:#ffffff;--panel-alt:#f1f5f9;--surface:#ccd8ec;
-      --text:#0d1117;--text-dim:#142540;--muted:#5c6b8a;--muted-dim:#5c7a9a;
-      --accent:#0284c7;--accent2:#2563eb;--border:#e2e8f0;--border-dim:#f1f5f9;
-      --primary:#0284c7;--primary-dim:rgba(2,132,199,0.07);--primary-glow:rgba(2,132,199,0.14);
-      --warn:#d97706;--warn-dim:rgba(217,119,6,0.08);
-    }
+    :root{--bg:#080c14;--panel:#0d1117;--panel-alt:#111827;--surface:#18253a;--text:#e6edf3;--text-dim:#96b0cc;--muted:#6b7280;--muted-dim:#3a5470;--accent:#00d4ff;--accent2:#58a6ff;--border:#1c2333;--border-dim:#111827;--primary:#00d4ff;--primary-dim:rgba(0,212,255,0.08);--primary-glow:rgba(0,212,255,0.18);--warn:#f59e0b;--warn-dim:rgba(245,158,11,0.10);--nav-h:48px;--mode-h:36px;}
+    body.light{--bg:#f8fafc;--panel:#ffffff;--panel-alt:#f1f5f9;--surface:#ccd8ec;--text:#0d1117;--text-dim:#142540;--muted:#5c6b8a;--muted-dim:#5c7a9a;--accent:#0284c7;--accent2:#2563eb;--border:#e2e8f0;--border-dim:#f1f5f9;--primary:#0284c7;--primary-dim:rgba(2,132,199,0.07);--primary-glow:rgba(2,132,199,0.14);--warn:#d97706;--warn-dim:rgba(217,119,6,0.08);}
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
     html{scroll-behavior:smooth;}
     body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;font-size:14px;line-height:1.6;min-height:100vh;overflow-x:hidden;transition:background 0.3s,color 0.3s;}
     body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 45% at 50% 0%,rgba(0,212,255,0.055) 0%,transparent 100%),radial-gradient(ellipse 50% 35% at 5% 100%,rgba(88,166,255,0.04) 0%,transparent 100%);pointer-events:none;z-index:0;}
     body.light::before{background:radial-gradient(ellipse 80% 45% at 50% 0%,rgba(2,132,199,0.05) 0%,transparent 100%),radial-gradient(ellipse 50% 35% at 5% 100%,rgba(37,99,235,0.03) 0%,transparent 100%);}
     a{color:inherit;text-decoration:none;}
-
-    /* NAV */
     .nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(8,12,20,0.92);border-bottom:1px solid var(--border);height:var(--nav-h);display:flex;align-items:center;padding:0 1.25rem;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);}
     body.light .nav{background:rgba(242,245,250,0.92);}
     .nav-brand{flex-shrink:0;margin-right:1rem;}.nav-brand img{height:22px;display:block;}
@@ -63,8 +49,6 @@
     body.nav-compact .nav-links{display:none;}
     body.nav-compact .hamburger{display:flex;}
     #scroll-sentinel{position:absolute;top:0;left:0;width:1px;height:10px;pointer-events:none;}
-
-    /* MODE BAR */
     .mode-bar{position:fixed;top:var(--nav-h);left:0;right:0;z-index:90;background:var(--panel);border-bottom:1px solid var(--border);height:var(--mode-h);display:flex;align-items:center;padding:0 1.5rem;gap:4px;}
     .mode-btn{font-family:'Share Tech Mono',monospace;font-size:0.58rem;letter-spacing:0.16em;color:var(--muted);padding:4px 14px;border-radius:3px;border:1px solid transparent;cursor:pointer;transition:0.15s;text-transform:uppercase;}
     .mode-btn:hover{color:var(--text);border-color:var(--border);}
@@ -72,58 +56,67 @@
     .mode-sep{width:1px;height:14px;background:var(--border);margin:0 4px;}
     .mode-settings{margin-left:auto;font-family:'Share Tech Mono',monospace;font-size:0.56rem;letter-spacing:0.1em;color:var(--muted);cursor:pointer;padding:4px 10px;border:1px solid var(--border);border-radius:3px;background:transparent;transition:0.15s;}
     .mode-settings:hover{color:var(--accent);border-color:var(--accent);}
-
-    /* PAGE */
     .page{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:calc(var(--nav-h) + var(--mode-h) + 2rem) 2rem 6rem;}
-
-    /* SECTION LABEL */
     .section-label{font-family:'Share Tech Mono',monospace;font-size:0.56rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--accent);margin-bottom:1rem;display:flex;align-items:center;gap:8px;}
     .section-label::after{content:'';flex:1;height:1px;background:var(--border);}
-
-    /* FIELDS */
-    .fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.5rem;}
-    .field-full{grid-column:1/-1;}
-    .field-group{display:flex;flex-direction:column;gap:5px;}
-    .field-label{font-family:'Share Tech Mono',monospace;font-size:0.52rem;letter-spacing:0.18em;color:var(--muted);text-transform:uppercase;}
-    .field-input,.field-select,.field-textarea{font-family:'Share Tech Mono',monospace;font-size:0.68rem;background:var(--panel-alt);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:7px 10px;outline:none;width:100%;transition:border-color 0.15s;}
-    .field-input:focus,.field-select:focus,.field-textarea:focus{border-color:var(--accent);}
-    .field-input::placeholder,.field-textarea::placeholder{color:var(--muted-dim);}
-    .field-textarea{resize:vertical;min-height:80px;line-height:1.5;}
-    .field-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;}
-
-    /* INPUT PANEL */
     .input-panel{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:24px;margin-bottom:1.5rem;position:relative;}
     .input-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0.5;}
     .input-title{font-family:'Exo 2',sans-serif;font-weight:700;font-size:1.1rem;letter-spacing:0.1em;margin-bottom:4px;}
     .input-title span{color:var(--accent);}
     .input-desc{font-family:'Exo 2',sans-serif;font-weight:300;font-size:0.7rem;color:var(--text-dim);margin-bottom:1.5rem;line-height:1.8;}
-    .btn-scan{font-family:'Share Tech Mono',monospace;font-size:0.68rem;letter-spacing:0.14em;background:var(--accent);color:#080c14;border:none;border-radius:4px;padding:10px 28px;cursor:pointer;font-weight:700;transition:0.15s;margin-top:6px;}
+    .eml-dropzone{border:2px dashed var(--border);border-radius:6px;padding:36px 24px;text-align:center;cursor:pointer;transition:border-color 0.2s,background 0.2s;margin-bottom:1rem;}
+    .eml-dropzone:hover,.eml-dropzone.dragover{border-color:var(--accent);background:var(--primary-dim);}
+    .dz-icon{font-size:2rem;margin-bottom:8px;color:var(--muted);}
+    .dz-text{font-family:'Exo 2',sans-serif;font-size:0.82rem;color:var(--text-dim);margin-bottom:4px;}
+    .dz-sub{font-family:'Share Tech Mono',monospace;font-size:0.54rem;color:var(--muted);letter-spacing:0.1em;}
+    .dz-file{font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--accent);margin-top:8px;min-height:1em;}
+    .paste-toggle{font-family:'Share Tech Mono',monospace;font-size:0.54rem;letter-spacing:0.12em;color:var(--accent2);cursor:pointer;padding:4px 0;display:inline-flex;align-items:center;gap:6px;user-select:none;}
+    .paste-toggle:hover{color:var(--accent);}
+    .paste-area{margin-top:10px;display:none;}
+    .field-textarea{font-family:'Share Tech Mono',monospace;font-size:0.65rem;background:var(--panel-alt);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:8px 10px;outline:none;width:100%;resize:vertical;min-height:120px;line-height:1.5;transition:border-color 0.15s;}
+    .field-textarea:focus{border-color:var(--accent);}
+    .field-textarea::placeholder{color:var(--muted-dim);}
+    .btn-parse{font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:0.12em;background:transparent;color:var(--accent);border:1px solid rgba(0,212,255,0.4);border-radius:3px;padding:7px 18px;cursor:pointer;transition:0.15s;margin-top:8px;}
+    .btn-parse:hover{background:var(--primary-dim);}
+    .no-key-warn{font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--warn);background:var(--warn-dim);border:1px solid rgba(245,158,11,0.3);border-radius:3px;padding:6px 12px;margin-top:12px;display:none;}
+    .msg-warn{background:var(--warn-dim);border:1px solid rgba(245,158,11,0.3);border-radius:4px;padding:12px 16px;font-family:'Exo 2',sans-serif;font-size:0.68rem;color:var(--warn);line-height:1.7;margin-bottom:1.2rem;display:none;}
+    .preview-panel{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:24px;margin-bottom:1.5rem;display:none;position:relative;}
+    .preview-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent2),transparent);opacity:0.5;}
+    .preview-title{font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.95rem;letter-spacing:0.08em;margin-bottom:1rem;}
+    .preview-title span{color:var(--accent);}
+    .preview-row{display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border-dim);}
+    .preview-row:last-child{border-bottom:none;}
+    .preview-key{font-family:'Share Tech Mono',monospace;font-size:0.5rem;letter-spacing:0.14em;color:var(--muted);min-width:110px;flex-shrink:0;padding-top:3px;text-transform:uppercase;}
+    .preview-val{font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--text);word-break:break-all;flex:1;}
+    .preview-chips{display:flex;gap:6px;flex-wrap:wrap;}
+    .p-chip{font-family:'Share Tech Mono',monospace;font-size:0.5rem;letter-spacing:0.1em;padding:2px 8px;border-radius:2px;border:1px solid;}
+    .chip-pass{color:var(--accent);border-color:rgba(0,212,255,0.3);background:var(--primary-dim);}
+    .chip-fail{color:var(--warn);border-color:rgba(245,158,11,0.3);background:var(--warn-dim);}
+    .chip-soft{color:var(--accent2);border-color:rgba(88,166,255,0.3);background:rgba(88,166,255,0.07);}
+    .chip-none{color:var(--muted);border-color:var(--border);}
+    .chip-info{color:var(--accent2);border-color:rgba(88,166,255,0.25);background:rgba(88,166,255,0.07);}
+    .att-card-p{background:var(--panel-alt);border:1px solid var(--border-dim);border-radius:3px;padding:7px 10px;margin-top:4px;}
+    .att-card-p-name{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--text-dim);}
+    .att-card-p-hash{font-family:'Share Tech Mono',monospace;font-size:0.48rem;color:var(--muted);margin-top:2px;word-break:break-all;}
+    .preview-actions{display:flex;gap:10px;margin-top:1.2rem;align-items:center;flex-wrap:wrap;}
+    .btn-scan{font-family:'Share Tech Mono',monospace;font-size:0.68rem;letter-spacing:0.14em;background:var(--accent);color:#080c14;border:none;border-radius:4px;padding:10px 28px;cursor:pointer;font-weight:700;transition:0.15s;}
     .btn-scan:hover{opacity:0.88;}
     .btn-scan:disabled{opacity:0.4;cursor:default;}
-    .no-key-warn{font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--warn);background:var(--warn-dim);border:1px solid rgba(245,158,11,0.3);border-radius:3px;padding:6px 12px;margin-top:10px;display:none;}
-
-    /* PROGRESS PANEL */
+    .btn-back{font-family:'Share Tech Mono',monospace;font-size:0.56rem;letter-spacing:0.1em;color:var(--muted);background:transparent;border:1px solid var(--border);border-radius:3px;padding:7px 14px;cursor:pointer;transition:0.15s;}
+    .btn-back:hover{color:var(--text);border-color:var(--muted);}
     .progress-panel{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:20px 24px;margin-bottom:1.5rem;display:none;}
     .progress-title{font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:0.16em;color:var(--accent);margin-bottom:14px;}
     .scan-log{display:flex;flex-direction:column;gap:6px;}
     .log-entry{display:flex;align-items:center;gap:10px;font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:0.04em;}
     .log-icon{width:16px;flex-shrink:0;text-align:center;font-size:0.65rem;}
-    .log-pending .log-icon{color:var(--muted-dim);}
-    .log-running .log-icon{color:var(--accent);}
-    .log-done .log-icon{color:var(--accent);}
-    .log-skip .log-icon{color:var(--muted-dim);}
-    .log-err .log-icon{color:var(--warn);}
     .log-text{color:var(--text-dim);}
     .log-running .log-text{color:var(--text);}
     .log-done .log-text{color:var(--muted);}
     .log-skip .log-text{color:var(--muted-dim);}
+    .log-err .log-text{color:var(--warn);}
     @keyframes spin{to{transform:rotate(360deg);}}
     .spin{display:inline-block;animation:spin 1s linear infinite;}
-
-    /* RESULTS */
     .results-panel{display:none;}
-
-    /* VERDICT BANNER */
     .verdict-banner{border-radius:6px;padding:20px 24px;margin-bottom:1.5rem;border:1px solid var(--border);position:relative;overflow:hidden;}
     .verdict-banner::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
     .verdict-critical .verdict-banner::before,.verdict-high .verdict-banner::before{background:linear-gradient(90deg,transparent,var(--warn),transparent);}
@@ -141,8 +134,6 @@
     .vstat{font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:0.1em;padding:3px 10px;border-radius:3px;border:1px solid var(--border);color:var(--muted);}
     .vstat.flagged{color:var(--warn);border-color:rgba(245,158,11,0.3);background:var(--warn-dim);}
     .vstat.clean{color:var(--accent);border-color:rgba(0,212,255,0.25);background:var(--primary-dim);}
-
-    /* IOC CARDS */
     .ioc-cards{display:flex;flex-direction:column;gap:10px;margin-bottom:1.5rem;}
     .ioc-card{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:14px 16px;}
     .ioc-card-header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;}
@@ -157,50 +148,38 @@
     .ioc-card-details{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
     .ioc-detail{font-family:'Share Tech Mono',monospace;font-size:0.54rem;color:var(--muted);background:var(--panel-alt);border:1px solid var(--border-dim);border-radius:2px;padding:2px 7px;}
     .ioc-detail.highlight{color:var(--warn);background:var(--warn-dim);border-color:rgba(245,158,11,0.25);}
-
-    /* QUICK LAUNCH */
     .quick-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.5rem;}
     .quick-btn{font-family:'Share Tech Mono',monospace;font-size:0.56rem;letter-spacing:0.1em;color:var(--accent2);background:transparent;border:1px solid var(--border);border-radius:3px;padding:5px 12px;cursor:pointer;transition:0.15s;text-decoration:none;display:inline-flex;align-items:center;gap:5px;}
     .quick-btn:hover{border-color:var(--accent2);background:rgba(88,166,255,0.06);}
-
-    /* CHECKLIST RESULTS */
     .checklist-steps{display:flex;flex-direction:column;gap:16px;margin-bottom:1.5rem;}
     .cl-step{background:var(--panel);border:1px solid var(--border);border-radius:4px;overflow:hidden;}
     .cl-step-header{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border-dim);cursor:pointer;user-select:none;}
     .cl-step-num{font-family:'Share Tech Mono',monospace;font-size:0.55rem;color:var(--muted-dim);}
     .cl-step-name{font-family:'Exo 2',sans-serif;font-weight:600;font-size:0.7rem;letter-spacing:0.1em;color:var(--text-dim);flex:1;}
-    .cl-step-progress{font-family:'Share Tech Mono',monospace;font-size:0.52rem;color:var(--muted);margin-left:auto;}
+    .cl-step-progress{font-family:'Share Tech Mono',monospace;font-size:0.52rem;color:var(--muted);}
     .cl-step-toggle{font-size:0.6rem;color:var(--muted);}
     .cl-items{padding:8px 14px;display:flex;flex-direction:column;gap:5px;}
     .cl-item{display:flex;align-items:flex-start;gap:8px;padding:4px 0;}
     .cl-icon{font-size:0.65rem;flex-shrink:0;margin-top:1px;width:14px;}
     .cl-auto{color:var(--accent);}
-    .cl-manual-done{color:var(--accent);opacity:0.6;}
     .cl-manual{color:var(--muted-dim);}
-    .cl-warn{color:var(--warn);}
     .cl-item-text{font-family:'Exo 2',sans-serif;font-size:0.67rem;color:var(--text-dim);flex:1;line-height:1.4;}
     .cl-item-note{font-family:'Share Tech Mono',monospace;font-size:0.54rem;color:var(--muted);margin-top:2px;}
     .cl-tag{font-family:'Share Tech Mono',monospace;font-size:0.48rem;letter-spacing:0.12em;padding:1px 6px;border-radius:2px;margin-left:6px;vertical-align:middle;}
     .cl-tag-auto{color:var(--accent);background:var(--primary-dim);border:1px solid rgba(0,212,255,0.2);}
     .cl-tag-manual{color:var(--muted);background:transparent;border:1px solid var(--border);}
-
-    /* STEPS NARRATIVE */
     .steps-narrative{display:flex;flex-direction:column;gap:8px;margin-bottom:1.5rem;}
     .step-note{display:flex;gap:12px;padding:10px 14px;background:var(--panel);border:1px solid var(--border);border-radius:4px;}
     .step-note-num{font-family:'Share Tech Mono',monospace;font-size:0.56rem;color:var(--accent);flex-shrink:0;margin-top:1px;}
     .step-note-body{flex:1;}
     .step-note-title{font-family:'Exo 2',sans-serif;font-weight:600;font-size:0.68rem;letter-spacing:0.08em;color:var(--text);margin-bottom:3px;}
     .step-note-text{font-family:'Exo 2',sans-serif;font-size:0.65rem;color:var(--text-dim);line-height:1.6;}
-
-    /* EXPORT */
     .export-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:2rem;}
     .btn-export{font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:0.12em;padding:8px 20px;border-radius:3px;cursor:pointer;transition:0.15s;border:1px solid;}
     .btn-export-primary{background:var(--primary-dim);color:var(--accent);border-color:rgba(0,212,255,0.3);}
     .btn-export-primary:hover{background:var(--primary-glow);}
     .btn-export-secondary{background:transparent;color:var(--muted);border-color:var(--border);}
     .btn-export-secondary:hover{color:var(--text);border-color:var(--muted);}
-
-    /* SETTINGS MODAL */
     .modal-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.72);backdrop-filter:blur(6px);}
     .modal-overlay.open{display:flex;align-items:center;justify-content:center;}
     .modal-box{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:24px;width:100%;max-width:420px;position:relative;}
@@ -209,16 +188,16 @@
     .modal-desc{font-family:'Exo 2',sans-serif;font-size:0.67rem;color:var(--text-dim);margin-bottom:1.2rem;line-height:1.7;}
     .modal-fields{display:flex;flex-direction:column;gap:12px;margin-bottom:1.2rem;}
     .modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+    .field-group{display:flex;flex-direction:column;gap:5px;}
+    .field-label{font-family:'Share Tech Mono',monospace;font-size:0.52rem;letter-spacing:0.18em;color:var(--muted);text-transform:uppercase;}
+    .field-input{font-family:'Share Tech Mono',monospace;font-size:0.68rem;background:var(--panel-alt);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:7px 10px;outline:none;width:100%;transition:border-color 0.15s;}
+    .field-input:focus{border-color:var(--accent);}
     .btn-save{font-family:'Share Tech Mono',monospace;font-size:0.58rem;letter-spacing:0.1em;background:var(--accent);color:#080c14;border:none;border-radius:3px;padding:7px 18px;cursor:pointer;font-weight:700;}
     .btn-cancel{font-family:'Share Tech Mono',monospace;font-size:0.58rem;letter-spacing:0.1em;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:3px;padding:7px 14px;cursor:pointer;}
-
-    /* FOOTER */
     .po-footer{border-top:1px solid var(--border);padding:1rem 2rem;font-family:'Share Tech Mono',monospace;font-size:0.56rem;color:var(--muted);letter-spacing:0.08em;position:relative;z-index:1;}
-
     @media(max-width:640px){
       .nav-links{display:none;}.hamburger{display:flex;}
       .page{padding:calc(var(--nav-h)+var(--mode-h)+1rem) 1rem 5rem;}
-      .fields-grid{grid-template-columns:1fr;}.field-full{grid-column:1;}
       .modal-box{margin:1rem;}
     }
   </style>
@@ -226,7 +205,6 @@
 <body class="dark">
   <div id="scroll-sentinel" aria-hidden="true"></div>
 
-  <!-- NAV -->
   <nav class="nav">
     <div class="hamburger" id="hamburger" onclick="toggleDrawer()"><span></span><span></span><span></span></div>
     <a class="nav-brand" href="https://h3ad-sec.github.io" target="_blank" rel="noopener">
@@ -254,7 +232,6 @@
     <div class="theme-toggle" onclick="toggleTheme()"><div class="toggle-track"><div class="toggle-thumb"></div></div></div>
   </nav>
 
-  <!-- MOBILE DRAWER -->
   <div class="nav-drawer" id="navDrawer">
     <a href="https://h3ad-sec.github.io" target="_blank" rel="noopener" onclick="closeDrawer()">HOME ↗</a>
     <a href="https://h3ad-sec.github.io/H3AD/" target="_blank" rel="noopener" onclick="closeDrawer()">H3AD ↗</a>
@@ -267,7 +244,7 @@
     <a href="https://h3ad-sec.github.io/QUERYCRAFT-AI/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ QUERYCRAFT-AI ↗</a>
     <a href="https://h3ad-sec.github.io/FPLENS-AI/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ FPLENS-AI ↗</a>
     <a href="https://h3ad-sec.github.io/ATTMAP-AI/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ ATTMAP-AI ↗</a>
-    <a href="https://h3ad-sec.github.io/CHRONO-AI/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ ATTMAP-AI ↗</a>
+    <a href="https://h3ad-sec.github.io/CHRONO-AI/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ CHRONO-AI ↗</a>
     <a href="https://h3ad-sec.github.io/H3AD-DETECT/" target="_blank" rel="noopener" onclick="closeDrawer()">H3AD-DETECT ↗</a>
     <a href="https://h3ad-sec.github.io/TRACERULES/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ TRACERULES ↗</a>
     <a href="https://h3ad-sec.github.io/H3AD-HUNT/" target="_blank" rel="noopener" onclick="closeDrawer()">H3AD-HUNT ↗</a>
@@ -282,7 +259,6 @@
     <a href="mailto:h3adsec@gmail.com" onclick="closeDrawer()">CONTACT</a>
   </div>
 
-  <!-- MODE BAR -->
   <div class="mode-bar">
     <a class="mode-btn" href="./index.html">MANUAL TRACKER</a>
     <div class="mode-sep"></div>
@@ -292,40 +268,43 @@
 
   <div class="page">
 
-    <!-- INPUT FORM -->
+    <!-- INPUT -->
     <div class="input-panel" id="inputPanel">
       <div class="input-title"><span>PHISHOPS</span> AUTO SCAN</div>
-      <div class="input-desc">Provide what you know. The tool calls VirusTotal, URLScan.io, and RDAP automatically and returns a full investigation report with risk score, IOC verdicts, and completed checklist. API keys required for VT and URLScan — set them via the API KEYS button above.</div>
-
-      <div class="section-label">EMAIL METADATA</div>
-      <div class="fields-grid">
-        <div class="field-group"><label class="field-label">SENDER ADDRESS</label><input class="field-input" id="f_sender" type="text" placeholder="attacker@phish-domain.com" /></div>
-        <div class="field-group"><label class="field-label">REPLY-TO</label><input class="field-input" id="f_replyTo" type="text" placeholder="reply@other-domain.com" /></div>
-        <div class="field-group"><label class="field-label">RETURN-PATH</label><input class="field-input" id="f_returnPath" type="text" placeholder="bounce@domain.com" /></div>
-        <div class="field-group"><label class="field-label">RECIPIENT(S)</label><input class="field-input" id="f_recipients" type="text" placeholder="user@company.com" /></div>
-        <div class="field-group field-full"><label class="field-label">SUBJECT</label><input class="field-input" id="f_subject" type="text" placeholder="Email subject line" /></div>
+      <div class="input-desc">Drop an EML file or paste raw email content. Headers, URLs, and attachments are extracted automatically. SHA256 is computed for every attachment. Full enrichment runs via VirusTotal, URLScan.io, and RDAP.</div>
+      <div class="section-label">EMAIL INPUT</div>
+      <div class="eml-dropzone" id="emlDropzone">
+        <div class="dz-icon">&#9993;</div>
+        <div class="dz-text">Drop .eml file here, or click to browse</div>
+        <div class="dz-sub">.EML &nbsp;&#183;&nbsp; .TXT &nbsp;&#183;&nbsp; .MSG (convert to .eml first)</div>
+        <div class="dz-file" id="dzFileName"></div>
+        <input type="file" id="emlFileInput" accept=".eml,.txt,.msg" style="display:none" onchange="onFileSelected(this)" />
       </div>
-
-      <div class="section-label">HEADER AUTH RESULTS</div>
-      <div class="fields-grid">
-        <div class="field-group"><label class="field-label">SPF</label><select class="field-select" id="f_spf"><option value="">-- not checked --</option><option value="pass">Pass</option><option value="fail">Fail</option><option value="softfail">Softfail</option><option value="none">None / Missing</option></select></div>
-        <div class="field-group"><label class="field-label">DKIM</label><select class="field-select" id="f_dkim"><option value="">-- not checked --</option><option value="pass">Pass</option><option value="fail">Fail</option><option value="none">None / Missing</option></select></div>
-        <div class="field-group"><label class="field-label">DMARC</label><select class="field-select" id="f_dmarc"><option value="">-- not checked --</option><option value="pass">Pass</option><option value="fail">Fail</option><option value="none">None / Missing</option></select></div>
-        <div class="field-group"><label class="field-label">X-ORIGINATING-IP</label><input class="field-input" id="f_origIp" type="text" placeholder="203.0.113.42" /></div>
+      <span class="paste-toggle" id="pasteToggle" onclick="togglePaste()">&#9660; or paste raw email</span>
+      <div class="paste-area" id="pasteArea">
+        <textarea class="field-textarea" id="emlPaste" rows="10" placeholder="Paste full email here — include all headers (From:, Received:, Authentication-Results:, Content-Type:, etc.) and body..."></textarea>
+        <button class="btn-parse" onclick="parseFromPaste()">PARSE EMAIL</button>
       </div>
-
-      <div class="section-label">IOCs TO ENRICH</div>
-      <div class="fields-grid">
-        <div class="field-group field-full"><label class="field-label">URLS / DOMAINS (one per line, raw or defanged)</label><textarea class="field-textarea" id="f_urls" rows="4" placeholder="https://login.phish-example.com/verify&#10;http://malicious-domain.net/payload&#10;hxxps://spoofed[.]com"></textarea></div>
-        <div class="field-group"><label class="field-label">FILE HASH (SHA256 or MD5)</label><input class="field-input" id="f_hash" type="text" placeholder="e3b0c44298fc1c149afbf4c8..." /></div>
-        <div class="field-group"><label class="field-label">AFFECTED USER</label><input class="field-input" id="f_user" type="text" placeholder="user@company.com" /></div>
-      </div>
-
-      <div id="noKeyWarn" class="no-key-warn">No VirusTotal API key set. Enrichment checks will be skipped. Add your key via the API KEYS button above.</div>
-      <button class="btn-scan" id="btnScan" onclick="runScan()">RUN SCAN</button>
+      <div id="noKeyWarn" class="no-key-warn">No VirusTotal API key set. Enrichment will be skipped. Add your key via API KEYS above.</div>
     </div>
 
-    <!-- PROGRESS PANEL -->
+    <!-- MSG WARNING -->
+    <div class="msg-warn" id="msgWarn">
+      <strong>MSG format detected.</strong> Outlook .MSG is a binary format that cannot be parsed in the browser.<br/>
+      To convert: open in Outlook &#8594; File &#8594; Save As &#8594; select <strong>Text Only (.txt)</strong> or use a converter like <strong>msg-extractor</strong> / <strong>msgreader</strong> to export as .eml. Then re-upload.
+    </div>
+
+    <!-- PREVIEW -->
+    <div class="preview-panel" id="previewPanel">
+      <div class="preview-title">PARSED <span>EMAIL</span></div>
+      <div id="previewContent"></div>
+      <div class="preview-actions">
+        <button class="btn-scan" onclick="runScanFromParsed()">RUN SCAN</button>
+        <button class="btn-back" onclick="resetToInput()">&#8592; BACK</button>
+      </div>
+    </div>
+
+    <!-- PROGRESS -->
     <div class="progress-panel" id="progressPanel">
       <div class="progress-title">SCANNING...</div>
       <div class="scan-log" id="scanLog"></div>
@@ -333,49 +312,35 @@
 
     <!-- RESULTS -->
     <div class="results-panel" id="resultsPanel">
-
-      <!-- VERDICT -->
       <div id="verdictBanner" class="verdict-banner"></div>
-
-      <!-- IOC ANALYSIS -->
       <div class="section-label">IOC ANALYSIS</div>
       <div class="ioc-cards" id="iocCards"></div>
-
-      <!-- QUICK LAUNCH -->
       <div class="section-label">MANUAL VERIFICATION TOOLS</div>
       <div class="quick-row" id="quickRow"></div>
-
-      <!-- HEADER SUMMARY -->
       <div class="section-label">HEADER AUTH SUMMARY</div>
       <div id="headerSummary" style="margin-bottom:1.5rem;"></div>
-
-      <!-- CHECKLIST + STEPS (single place subsection) -->
       <div class="section-label">FULL INVESTIGATION CHECKLIST</div>
       <div id="checklistSteps" class="checklist-steps"></div>
-
       <div class="section-label">INVESTIGATION STEPS FOLLOWED</div>
       <div id="stepsNarrative" class="steps-narrative"></div>
-
-      <!-- EXPORT -->
       <div class="section-label">EXPORT</div>
       <div class="export-bar">
         <button class="btn-export btn-export-primary" onclick="exportReport()">COPY FULL REPORT</button>
         <button class="btn-export btn-export-secondary" onclick="resetScan()">NEW SCAN</button>
       </div>
-
     </div>
+
   </div>
 
   <footer class="po-footer">H3AD-SEC &middot; PHISHOPS AUTO SCAN &middot; AUTOMATED PHISHING ANALYSIS</footer>
 
-  <!-- SETTINGS MODAL -->
   <div class="modal-overlay" id="settingsModal" onclick="closeSettingsOutside(event)">
     <div class="modal-box">
       <div class="modal-title"><span>API</span> KEYS</div>
-      <div class="modal-desc">Keys are stored in your browser only (localStorage). Never sent anywhere except to the respective API. Free tier VT key gives 4 requests/min — the scanner throttles automatically.</div>
+      <div class="modal-desc">Keys are stored in your browser only (localStorage). Never sent anywhere except the respective API. Free tier VT key allows 4 req/min — the scanner throttles automatically.</div>
       <div class="modal-fields">
-        <div class="field-group"><label class="field-label">VIRUSTOTAL API KEY</label><input class="field-input" id="set_vt" type="password" placeholder="Enter VirusTotal API v3 key" /></div>
-        <div class="field-group"><label class="field-label">URLSCAN.IO API KEY (optional)</label><input class="field-input" id="set_urlscan" type="password" placeholder="Enter URLScan.io API key" /></div>
+        <div class="field-group"><label class="field-label">VIRUSTOTAL API KEY</label><input class="field-input" id="set_vt" type="password" placeholder="VirusTotal API v3 key" /></div>
+        <div class="field-group"><label class="field-label">URLSCAN.IO API KEY (optional)</label><input class="field-input" id="set_urlscan" type="password" placeholder="URLScan.io API key" /></div>
       </div>
       <div class="modal-actions">
         <button class="btn-cancel" onclick="closeSettings()">CANCEL</button>
@@ -387,740 +352,780 @@
   <script>
   // ── SETTINGS ────────────────────────────────────────────────────────────────
   var SETTINGS_KEY = 'phishops_scan_settings';
+  function loadSettings(){try{return JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}');}catch(e){return {};}}
+  function saveSettings(){var s=loadSettings();s.vtKey=document.getElementById('set_vt').value.trim();s.urlscanKey=document.getElementById('set_urlscan').value.trim();localStorage.setItem(SETTINGS_KEY,JSON.stringify(s));closeSettings();checkKeyState();}
+  function openSettings(){var s=loadSettings();document.getElementById('set_vt').value=s.vtKey||'';document.getElementById('set_urlscan').value=s.urlscanKey||'';document.getElementById('settingsModal').classList.add('open');}
+  function closeSettings(){document.getElementById('settingsModal').classList.remove('open');}
+  function closeSettingsOutside(e){if(e.target===document.getElementById('settingsModal'))closeSettings();}
+  function checkKeyState(){var s=loadSettings();document.getElementById('noKeyWarn').style.display=s.vtKey?'none':'block';}
 
-  function loadSettings() {
-    try { return JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); } catch(e) { return {}; }
+  // ── UTILITIES ────────────────────────────────────────────────────────────────
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function sleep(ms){return new Promise(function(r){setTimeout(r,ms);});}
+
+  function extractDomain(url){
+    try{
+      var u=url.trim().replace(/^hxxps?:\/\//i,'https://').replace(/\[\.]/g,'.').replace(/\[\.\]/g,'.');
+      if(!/^https?:\/\//i.test(u))u='https://'+u;
+      return new URL(u).hostname.replace(/^www\./,'');
+    }catch(e){return null;}
+  }
+  function refang(url){return url.trim().replace(/^hxxps?:\/\//i,function(m){return m.replace('xx','tt');}).replace(/\[\.]/g,'.').replace(/\[\.\]/g,'.');}
+  function vtUrlId(url){try{return btoa(url).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}catch(e){return null;}}
+  function domainAge(d){if(!d)return null;var created=new Date(d),now=new Date();return Math.floor((now-created)/(1000*60*60*24));}
+  function extractEmailAddr(str){var m=str.match(/<([^>]+)>/);return m?m[1].trim():str.trim();}
+
+  // ── EML PARSING ──────────────────────────────────────────────────────────────
+  function decodeRFC2047(str){
+    if(!str||str.indexOf('=?')===-1)return str;
+    return str.replace(/=\?([^?]+)\?([BbQq])\?([^?]*)\?=/g,function(_,charset,enc,text){
+      try{
+        if(enc.toUpperCase()==='B'){
+          var bytes=atob(text.replace(/\s/g,''));
+          if(/utf-?8/i.test(charset)){
+            try{return decodeURIComponent(bytes.split('').map(function(c){return'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2);}).join(''));}
+            catch(e2){return bytes;}
+          }
+          return bytes;
+        }else{
+          return text.replace(/_/g,' ').replace(/=([0-9A-Fa-f]{2})/g,function(m,h){return String.fromCharCode(parseInt(h,16));});
+        }
+      }catch(e){return str;}
+    });
   }
 
-  function saveSettings() {
-    var s = loadSettings();
-    s.vtKey = document.getElementById('set_vt').value.trim();
-    s.urlscanKey = document.getElementById('set_urlscan').value.trim();
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
-    closeSettings();
-    checkKeyState();
+  function decodeQP(str){return str.replace(/=\r?\n/g,'').replace(/=([0-9A-Fa-f]{2})/g,function(m,h){return String.fromCharCode(parseInt(h,16));});}
+
+  function extractBoundary(ct){var m=ct.match(/boundary=["']?([^"';\r\n\s]+)["']?/i);return m?m[1].trim():null;}
+
+  function parseHeaders(headerText){
+    var unfolded=headerText.replace(/\r?\n([ \t]+)/g,' ');
+    var headers={};
+    unfolded.split(/\r?\n/).forEach(function(line){
+      if(!line||line[0]===' '||line[0]==='\t')return;
+      var colon=line.indexOf(':');
+      if(colon<1)return;
+      var key=line.substring(0,colon).toLowerCase().trim();
+      var val=decodeRFC2047(line.substring(colon+1).trim());
+      if(headers[key]===undefined){headers[key]=val;}
+      else{if(!Array.isArray(headers[key]))headers[key]=[headers[key]];headers[key].push(val);}
+    });
+    return headers;
   }
 
-  function openSettings() {
-    var s = loadSettings();
-    document.getElementById('set_vt').value = s.vtKey || '';
-    document.getElementById('set_urlscan').value = s.urlscanKey || '';
-    document.getElementById('settingsModal').classList.add('open');
-  }
-  function closeSettings() { document.getElementById('settingsModal').classList.remove('open'); }
-  function closeSettingsOutside(e) { if (e.target === document.getElementById('settingsModal')) closeSettings(); }
-
-  function checkKeyState() {
-    var s = loadSettings();
-    document.getElementById('noKeyWarn').style.display = s.vtKey ? 'none' : 'block';
+  function extractAuthVal(str,proto){
+    var m=str.match(new RegExp(proto+'\\s*=\\s*(\\S+)','i'));
+    return m?m[1].toLowerCase().split(/[;\s(]/)[0]:'';
   }
 
-  // ── UTILITIES ───────────────────────────────────────────────────────────────
-  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-  function extractDomain(url) {
-    try {
-      var u = url.trim()
-        .replace(/^hxxps?:\/\//i, 'https://')
-        .replace(/\[\.]/g, '.')
-        .replace(/\[\.\]/g, '.');
-      if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
-      return new URL(u).hostname.replace(/^www\./, '');
-    } catch(e) { return null; }
+  function extractUrlsFromHtml(html){
+    var urls=[];
+    var re=/href\s*=\s*["']([^"']+)["']/gi,m;
+    while((m=re.exec(html))!==null){
+      var u=m[1].trim();
+      if(/^https?:\/\//i.test(u)&&urls.indexOf(u)===-1)urls.push(u);
+    }
+    return urls;
   }
 
-  function refang(url) {
-    return url.trim()
-      .replace(/^hxxps?:\/\//i, function(m) { return m.replace('xx','tt'); })
-      .replace(/\[\.]/g, '.').replace(/\[\.\]/g, '.');
+  function extractUrlsFromText(text){
+    var urls=[];
+    var re=/(https?:\/\/[^\s"'<>()\[\]]+)/gi,m;
+    while((m=re.exec(text))!==null){
+      var u=m[1].replace(/[.,;:!?]+$/,'');
+      if(urls.indexOf(u)===-1)urls.push(u);
+    }
+    return urls;
   }
 
-  function vtUrlId(url) {
-    try { return btoa(url).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); } catch(e) { return null; }
+  async function sha256Bytes(buffer){
+    var h=await crypto.subtle.digest('SHA-256',buffer);
+    return Array.from(new Uint8Array(h)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
   }
 
-  function domainAge(creationDateStr) {
-    if (!creationDateStr) return null;
-    var created = new Date(creationDateStr);
-    var now = new Date();
-    return Math.floor((now - created) / (1000 * 60 * 60 * 24));
+  function parseMIMEParts(fullText,boundary){
+    var lines=fullText.split(/\r?\n/);
+    var parts=[],currentPart=null;
+    var delimFull='--'+boundary;
+    var delimEnd='--'+boundary+'--';
+    for(var i=0;i<lines.length;i++){
+      var line=lines[i].trimEnd();
+      if(line===delimEnd||line.startsWith(delimEnd)){if(currentPart)parts.push(currentPart);break;}
+      if(line===delimFull||line.startsWith(delimFull+' ')||line.startsWith(delimFull+'\t')){
+        if(currentPart)parts.push(currentPart);
+        currentPart={headerLines:[],bodyLines:[],inBody:false};
+        continue;
+      }
+      if(!currentPart)continue;
+      if(!currentPart.inBody){if(line===''){currentPart.inBody=true;}else{currentPart.headerLines.push(lines[i]);}}
+      else{currentPart.bodyLines.push(lines[i]);}
+    }
+    if(currentPart&&currentPart.bodyLines.length>0)parts.push(currentPart);
+    return parts;
   }
 
-  function sleep(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
+  async function processMIMETree(bodyText,boundary,result){
+    var parts=parseMIMEParts(bodyText,boundary);
+    for(var i=0;i<parts.length;i++){
+      var p=parts[i];
+      var hdrText=p.headerLines.join('\r\n');
+      var headers=parseHeaders(hdrText);
+      var ct=headers['content-type']||'text/plain';
+      var mimeType=ct.split(';')[0].trim().toLowerCase();
+      var cte=(headers['content-transfer-encoding']||'').toLowerCase().trim();
+      var cd=headers['content-disposition']||'';
+      var bodyRaw=p.bodyLines.join('\r\n');
 
-  // ── PROGRESS LOG ────────────────────────────────────────────────────────────
-  var logEntries = [];
-  function addLog(id, text) {
-    logEntries.push({ id: id, text: text, status: 'pending' });
-    renderLog();
-    return id;
+      if(mimeType.startsWith('multipart/')){
+        var nb=extractBoundary(ct);
+        if(nb)await processMIMETree(bodyRaw,nb,result);
+        continue;
+      }
+
+      var isAttach=/attachment/i.test(cd);
+      var fnMatch=cd.match(/filename\*?=["']?(?:utf-8'')?([^"';\r\n]+)/i)||ct.match(/name=["']?([^"';\r\n]+)/i);
+      var fname=fnMatch?decodeRFC2047(fnMatch[1].trim()):'attachment_'+(i+1);
+
+      var decodedText=bodyRaw;
+      var decodedBuf=null;
+      if(cte==='base64'){
+        var b64=bodyRaw.replace(/\r?\n/g,'').replace(/\s/g,'');
+        try{
+          var binStr=atob(b64);
+          var arr=new Uint8Array(binStr.length);
+          for(var j=0;j<binStr.length;j++)arr[j]=binStr.charCodeAt(j);
+          decodedBuf=arr.buffer;
+          if(mimeType.startsWith('text/'))decodedText=binStr;
+        }catch(e){}
+      }else if(cte==='quoted-printable'){
+        decodedText=decodeQP(bodyRaw);
+      }
+
+      if(isAttach||(!mimeType.startsWith('text/')&&!mimeType.startsWith('multipart/'))){
+        var hash=null,sz=0;
+        if(decodedBuf){
+          try{hash=await sha256Bytes(decodedBuf);sz=decodedBuf.byteLength;}catch(e){}
+        }
+        result.attachments.push({name:fname,mimeType:mimeType,size:sz,sha256:hash});
+        continue;
+      }
+
+      if(mimeType==='text/html'){
+        extractUrlsFromHtml(decodedText).forEach(function(u){if(result.urls.indexOf(u)===-1)result.urls.push(u);});
+      }else{
+        extractUrlsFromText(decodedText).forEach(function(u){if(result.urls.indexOf(u)===-1)result.urls.push(u);});
+      }
+    }
   }
-  function setLog(id, status, text) {
-    var e = logEntries.find(function(x) { return x.id === id; });
-    if (e) { e.status = status; if (text) e.text = text; }
-    renderLog();
+
+  async function parseEML(raw){
+    var splitIdx=raw.search(/\r?\n\r?\n/);
+    if(splitIdx===-1)return null;
+    var headerSection=raw.substring(0,splitIdx);
+    var bodySection=raw.substring(splitIdx).replace(/^\r?\n/,'');
+    var headers=parseHeaders(headerSection);
+
+    var authRaw=headers['authentication-results']||'';
+    if(Array.isArray(authRaw))authRaw=authRaw.join(' ');
+
+    var result={
+      from:headers['from']||'',
+      replyTo:headers['reply-to']||'',
+      returnPath:(headers['return-path']||'').replace(/[<>]/g,'').trim(),
+      to:headers['to']||'',
+      subject:headers['subject']||'',
+      date:headers['date']||'',
+      messageId:headers['message-id']||'',
+      origIp:'',
+      spf:extractAuthVal(authRaw,'spf'),
+      dkim:extractAuthVal(authRaw,'dkim'),
+      dmarc:extractAuthVal(authRaw,'dmarc'),
+      urls:[],
+      attachments:[],
+      rawHeaders:headerSection,
+    };
+
+    var xip=headers['x-originating-ip']||headers['x-sender-ip']||'';
+    result.origIp=xip.replace(/[<>\[\]]/g,'').trim();
+
+    var ct=headers['content-type']||'text/plain';
+    var mimeType=ct.split(';')[0].trim().toLowerCase();
+    var boundary=extractBoundary(ct);
+
+    if(boundary){
+      await processMIMETree(bodySection,boundary,result);
+    }else{
+      var cte=(headers['content-transfer-encoding']||'').toLowerCase().trim();
+      var txt=bodySection;
+      if(cte==='base64')try{txt=atob(bodySection.replace(/\r?\n/g,'').trim());}catch(e){}
+      else if(cte==='quoted-printable')txt=decodeQP(bodySection);
+      if(mimeType==='text/html')extractUrlsFromHtml(txt).forEach(function(u){result.urls.push(u);});
+      else extractUrlsFromText(txt).forEach(function(u){result.urls.push(u);});
+    }
+
+    return result;
   }
-  function renderLog() {
-    var icons = { pending: '<span style="color:var(--muted-dim)">○</span>', running: '<span class="spin" style="color:var(--accent)">◌</span>', done: '<span style="color:var(--accent)">✓</span>', skip: '<span style="color:var(--muted-dim)">—</span>', err: '<span style="color:var(--warn)">!</span>' };
-    document.getElementById('scanLog').innerHTML = logEntries.map(function(e) {
-      return '<div class="log-entry log-' + e.status + '"><div class="log-icon">' + (icons[e.status] || '○') + '</div><div class="log-text">' + esc(e.text) + '</div></div>';
+
+  // ── FILE HANDLING ────────────────────────────────────────────────────────────
+  var parsedEmail=null;
+
+  function onFileSelected(input){
+    var file=input.files&&input.files[0];
+    if(!file)return;
+    document.getElementById('dzFileName').textContent='Reading: '+file.name+'...';
+    var reader=new FileReader();
+    reader.onload=function(e){
+      var ab=e.target.result;
+      var bytes=new Uint8Array(ab);
+      if(bytes[0]===0xD0&&bytes[1]===0xCF&&bytes[2]===0x11&&bytes[3]===0xE0){
+        document.getElementById('msgWarn').style.display='block';
+        document.getElementById('dzFileName').textContent='';
+        return;
+      }
+      document.getElementById('msgWarn').style.display='none';
+      var text=new TextDecoder('utf-8',{fatal:false}).decode(ab);
+      document.getElementById('dzFileName').textContent=file.name;
+      parseAndPreview(text);
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function togglePaste(){
+    var area=document.getElementById('pasteArea');
+    var tog=document.getElementById('pasteToggle');
+    if(area.style.display==='none'||area.style.display===''){area.style.display='block';tog.innerHTML='&#9650; hide paste area';}
+    else{area.style.display='none';tog.innerHTML='&#9660; or paste raw email';}
+  }
+
+  function parseFromPaste(){
+    var text=document.getElementById('emlPaste').value.trim();
+    if(!text)return;
+    parseAndPreview(text);
+  }
+
+  async function parseAndPreview(text){
+    try{
+      parsedEmail=await parseEML(text);
+      if(!parsedEmail){alert('Could not parse email. Make sure the input starts with RFC 2822 headers (From:, Received:, etc.).');return;}
+      renderPreview(parsedEmail);
+      document.getElementById('inputPanel').style.display='none';
+      document.getElementById('msgWarn').style.display='none';
+      document.getElementById('previewPanel').style.display='block';
+    }catch(e){alert('Parse error: '+e.message);}
+  }
+
+  function resetToInput(){
+    document.getElementById('previewPanel').style.display='none';
+    document.getElementById('inputPanel').style.display='block';
+  }
+
+  function initDropZone(){
+    var dz=document.getElementById('emlDropzone');
+    dz.addEventListener('click',function(e){if(e.target!==document.getElementById('emlFileInput'))document.getElementById('emlFileInput').click();});
+    dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('dragover');});
+    dz.addEventListener('dragleave',function(){dz.classList.remove('dragover');});
+    dz.addEventListener('drop',function(e){
+      e.preventDefault();dz.classList.remove('dragover');
+      var file=e.dataTransfer.files[0];
+      if(!file)return;
+      try{var dt=new DataTransfer();dt.items.add(file);document.getElementById('emlFileInput').files=dt.files;}catch(_){}
+      onFileSelected({files:[file]});
+    });
+  }
+
+  // ── PREVIEW RENDER ───────────────────────────────────────────────────────────
+  function renderPreview(p){
+    function row(k,v){return'<div class="preview-row"><div class="preview-key">'+k+'</div><div class="preview-val">'+v+'</div></div>';}
+    function authChip(val,label){
+      if(!val)return'<span class="p-chip chip-none">'+label+': N/A</span>';
+      var cls=(val==='pass')?'chip-pass':(val.includes('fail')||val==='none')?'chip-fail':'chip-soft';
+      return'<span class="p-chip '+cls+'">'+label+': '+val.toUpperCase()+'</span>';
+    }
+    var html='';
+    if(p.from)html+=row('FROM','<span style="color:var(--text-dim)">'+esc(p.from)+'</span>');
+    if(p.replyTo)html+=row('REPLY-TO','<span style="color:var(--warn)">'+esc(p.replyTo)+'</span>');
+    if(p.returnPath)html+=row('RETURN-PATH',esc(p.returnPath));
+    if(p.to)html+=row('TO',esc(p.to));
+    if(p.subject)html+=row('SUBJECT',esc(p.subject));
+    if(p.date)html+=row('DATE',esc(p.date));
+    if(p.origIp)html+=row('ORIGIN IP','<span style="color:var(--accent2)">'+esc(p.origIp)+'</span>');
+    html+=row('AUTH',
+      '<div class="preview-chips">'+authChip(p.spf,'SPF')+authChip(p.dkim,'DKIM')+authChip(p.dmarc,'DMARC')+'</div>'
+    );
+    html+=row('URLS FOUND',
+      p.urls.length>0
+        ?'<span class="p-chip chip-info">'+p.urls.length+' URL(s) extracted</span>'
+        :'<span class="p-chip chip-none">NONE</span>'
+    );
+    if(p.attachments.length>0){
+      var attHtml='<div style="display:flex;flex-direction:column;gap:5px;">';
+      p.attachments.forEach(function(a){
+        attHtml+='<div class="att-card-p"><div class="att-card-p-name">'+esc(a.name)
+          +(a.size?' <span style="color:var(--muted);">('+Math.round(a.size/1024)+' KB)</span>':'')
+          +'</div>';
+        if(a.sha256)attHtml+='<div class="att-card-p-hash">SHA256: '+esc(a.sha256)+'</div>';
+        else attHtml+='<div class="att-card-p-hash" style="color:var(--muted)">SHA256: could not compute</div>';
+        attHtml+='</div>';
+      });
+      attHtml+='</div>';
+      html+=row('ATTACHMENTS',attHtml);
+    }else{
+      html+=row('ATTACHMENTS','<span class="p-chip chip-none">NONE DETECTED</span>');
+    }
+    document.getElementById('previewContent').innerHTML=html;
+  }
+
+  // ── PROGRESS LOG ─────────────────────────────────────────────────────────────
+  var logEntries=[];
+  function addLog(id,text){logEntries.push({id:id,text:text,status:'pending'});renderLog();return id;}
+  function setLog(id,status,text){var e=logEntries.find(function(x){return x.id===id;});if(e){e.status=status;if(text)e.text=text;}renderLog();}
+  function renderLog(){
+    var icons={pending:'<span style="color:var(--muted-dim)">○</span>',running:'<span class="spin" style="color:var(--accent)">◌</span>',done:'<span style="color:var(--accent)">✓</span>',skip:'<span style="color:var(--muted-dim)">—</span>',err:'<span style="color:var(--warn)">!</span>'};
+    document.getElementById('scanLog').innerHTML=logEntries.map(function(e){
+      return'<div class="log-entry log-'+e.status+'"><div class="log-icon">'+(icons[e.status]||'○')+'</div><div class="log-text">'+esc(e.text)+'</div></div>';
     }).join('');
   }
 
-  // ── API CALLS ───────────────────────────────────────────────────────────────
-  async function vtGet(path, apiKey) {
-    var r = await fetch('https://www.virustotal.com/api/v3' + path, { headers: { 'x-apikey': apiKey } });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    return r.json();
-  }
+  // ── API CALLS ─────────────────────────────────────────────────────────────────
+  async function vtGet(path,apiKey){var r=await fetch('https://www.virustotal.com/api/v3'+path,{headers:{'x-apikey':apiKey}});if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}
+  async function vtDomain(domain,apiKey){var data=await vtGet('/domains/'+encodeURIComponent(domain),apiKey);var a=data.data&&data.data.attributes;if(!a)return null;var s=a.last_analysis_stats||{};return{malicious:s.malicious||0,suspicious:s.suspicious||0,harmless:s.harmless||0,undetected:s.undetected||0,total:Object.values(s).reduce(function(x,y){return x+y;},0),creation_date:a.creation_date,reputation:a.reputation||0};}
+  async function vtUrl(url,apiKey){var id=vtUrlId(url);if(!id)return null;try{var data=await vtGet('/urls/'+id,apiKey);var a=data.data&&data.data.attributes;if(!a)return null;var s=a.last_analysis_stats||{};return{malicious:s.malicious||0,suspicious:s.suspicious||0,harmless:s.harmless||0,undetected:s.undetected||0,total:Object.values(s).reduce(function(x,y){return x+y;},0)};}catch(e){return null;}}
+  async function vtIp(ip,apiKey){var data=await vtGet('/ip_addresses/'+encodeURIComponent(ip),apiKey);var a=data.data&&data.data.attributes;if(!a)return null;var s=a.last_analysis_stats||{};return{malicious:s.malicious||0,suspicious:s.suspicious||0,harmless:s.harmless||0,undetected:s.undetected||0,total:Object.values(s).reduce(function(x,y){return x+y;},0),country:a.country,as_owner:a.as_owner};}
+  async function vtHash(hash,apiKey){var data=await vtGet('/files/'+hash,apiKey);var a=data.data&&data.data.attributes;if(!a)return null;var s=a.last_analysis_stats||{};return{malicious:s.malicious||0,suspicious:s.suspicious||0,harmless:s.harmless||0,undetected:s.undetected||0,total:Object.values(s).reduce(function(x,y){return x+y;},0),type:a.type_description,name:a.meaningful_name};}
+  async function rdapAge(domain){try{var r=await fetch('https://rdap.org/domain/'+encodeURIComponent(domain));if(!r.ok)return null;var data=await r.json();var reg=(data.events||[]).find(function(e){return e.eventAction==='registration';});return reg?reg.eventDate:null;}catch(e){return null;}}
+  async function urlscanSubmit(url,apiKey){try{var r=await fetch('https://urlscan.io/api/v1/scan/',{method:'POST',headers:{'API-Key':apiKey,'Content-Type':'application/json'},body:JSON.stringify({url:url,visibility:'public'})});if(!r.ok)return null;var d=await r.json();return d.uuid||null;}catch(e){return null;}}
+  async function urlscanResult(uuid){for(var i=0;i<4;i++){await sleep(8000);try{var r=await fetch('https://urlscan.io/api/v1/result/'+uuid+'/');if(r.status===404)continue;if(!r.ok)return null;var d=await r.json();return{verdicts:d.verdicts,resultURL:'https://urlscan.io/result/'+uuid+'/'};} catch(e){continue;}}return null;}
 
-  async function vtDomain(domain, apiKey) {
-    var data = await vtGet('/domains/' + encodeURIComponent(domain), apiKey);
-    var attrs = data.data && data.data.attributes;
-    if (!attrs) return null;
-    var stats = attrs.last_analysis_stats || {};
-    return { malicious: stats.malicious || 0, suspicious: stats.suspicious || 0, harmless: stats.harmless || 0, undetected: stats.undetected || 0, total: Object.values(stats).reduce(function(a,b){return a+b;},0), creation_date: attrs.creation_date, categories: attrs.categories || {}, reputation: attrs.reputation || 0 };
-  }
+  // ── SCORING ───────────────────────────────────────────────────────────────────
+  function scoreFromStats(s){if(!s)return 0;return Math.min(40,(s.malicious||0)*5+(s.suspicious||0)*2);}
+  function verdictLabel(s){if(s>=70)return'CRITICAL';if(s>=45)return'HIGH RISK';if(s>=20)return'MEDIUM RISK';return'LOW RISK';}
+  function verdictClass(s){if(s>=70)return'verdict-critical';if(s>=45)return'verdict-high';if(s>=20)return'verdict-medium';return'verdict-low';}
+  function iocBadge(s){if(!s)return'<span class="ioc-verdict-badge badge-skipped">SKIPPED</span>';if(s.malicious>0)return'<span class="ioc-verdict-badge badge-malicious">MALICIOUS ('+s.malicious+'/'+s.total+')</span>';if(s.suspicious>0)return'<span class="ioc-verdict-badge badge-suspicious">SUSPICIOUS ('+s.suspicious+'/'+s.total+')</span>';return'<span class="ioc-verdict-badge badge-clean">CLEAN ('+s.harmless+'/'+s.total+')</span>';}
 
-  async function vtUrl(url, apiKey) {
-    var id = vtUrlId(url);
-    if (!id) return null;
-    try {
-      var data = await vtGet('/urls/' + id, apiKey);
-      var attrs = data.data && data.data.attributes;
-      if (!attrs) return null;
-      var stats = attrs.last_analysis_stats || {};
-      return { malicious: stats.malicious || 0, suspicious: stats.suspicious || 0, harmless: stats.harmless || 0, undetected: stats.undetected || 0, total: Object.values(stats).reduce(function(a,b){return a+b;},0), final_url: attrs.url };
-    } catch(e) { return null; }
-  }
+  // ── MAIN SCAN ─────────────────────────────────────────────────────────────────
+  var scanResults={};
 
-  async function vtIp(ip, apiKey) {
-    var data = await vtGet('/ip_addresses/' + encodeURIComponent(ip), apiKey);
-    var attrs = data.data && data.data.attributes;
-    if (!attrs) return null;
-    var stats = attrs.last_analysis_stats || {};
-    return { malicious: stats.malicious || 0, suspicious: stats.suspicious || 0, harmless: stats.harmless || 0, undetected: stats.undetected || 0, total: Object.values(stats).reduce(function(a,b){return a+b;},0), country: attrs.country, asn: attrs.asn, as_owner: attrs.as_owner };
-  }
-
-  async function vtHash(hash, apiKey) {
-    var data = await vtGet('/files/' + hash, apiKey);
-    var attrs = data.data && data.data.attributes;
-    if (!attrs) return null;
-    var stats = attrs.last_analysis_stats || {};
-    return { malicious: stats.malicious || 0, suspicious: stats.suspicious || 0, harmless: stats.harmless || 0, undetected: stats.undetected || 0, total: Object.values(stats).reduce(function(a,b){return a+b;},0), type: attrs.type_description, name: attrs.meaningful_name, size: attrs.size };
-  }
-
-  async function rdapAge(domain) {
-    try {
-      var r = await fetch('https://rdap.org/domain/' + encodeURIComponent(domain));
-      if (!r.ok) return null;
-      var data = await r.json();
-      var events = data.events || [];
-      var reg = events.find(function(e) { return e.eventAction === 'registration'; });
-      return reg ? reg.eventDate : null;
-    } catch(e) { return null; }
-  }
-
-  async function urlscanSubmit(url, apiKey) {
-    try {
-      var r = await fetch('https://urlscan.io/api/v1/scan/', {
-        method: 'POST',
-        headers: { 'API-Key': apiKey, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: url, visibility: 'public' })
-      });
-      if (!r.ok) return null;
-      var data = await r.json();
-      return data.uuid || null;
-    } catch(e) { return null; }
-  }
-
-  async function urlscanResult(uuid) {
-    for (var i = 0; i < 4; i++) {
-      await sleep(8000);
-      try {
-        var r = await fetch('https://urlscan.io/api/v1/result/' + uuid + '/');
-        if (r.status === 404) continue;
-        if (!r.ok) return null;
-        var data = await r.json();
-        return { verdicts: data.verdicts, screenshot: data.task && data.task.screenshotURL, resultURL: 'https://urlscan.io/result/' + uuid + '/' };
-      } catch(e) { continue; }
-    }
-    return null;
-  }
-
-  // ── SCORING ─────────────────────────────────────────────────────────────────
-  function scoreFromStats(stats) {
-    if (!stats) return 0;
-    return Math.min(40, (stats.malicious || 0) * 5 + (stats.suspicious || 0) * 2);
-  }
-
-  function verdictLabel(score) {
-    if (score >= 70) return 'CRITICAL';
-    if (score >= 45) return 'HIGH RISK';
-    if (score >= 20) return 'MEDIUM RISK';
-    return 'LOW RISK';
-  }
-
-  function verdictClass(score) {
-    if (score >= 70) return 'verdict-critical';
-    if (score >= 45) return 'verdict-high';
-    if (score >= 20) return 'verdict-medium';
-    return 'verdict-low';
-  }
-
-  function iocBadge(stats) {
-    if (!stats) return '<span class="ioc-verdict-badge badge-skipped">SKIPPED</span>';
-    if (stats.malicious > 0) return '<span class="ioc-verdict-badge badge-malicious">MALICIOUS (' + stats.malicious + '/' + stats.total + ')</span>';
-    if (stats.suspicious > 0) return '<span class="ioc-verdict-badge badge-suspicious">SUSPICIOUS (' + stats.suspicious + '/' + stats.total + ')</span>';
-    return '<span class="ioc-verdict-badge badge-clean">CLEAN (' + stats.harmless + '/' + stats.total + ')</span>';
-  }
-
-  // ── MAIN SCAN ───────────────────────────────────────────────────────────────
-  var scanResults = {};
-
-  async function runScan() {
-    var s = loadSettings();
-    var vtKey = s.vtKey || '';
-    var urlscanKey = s.urlscanKey || '';
-
-    // Parse inputs
-    var inputs = {
-      sender: document.getElementById('f_sender').value.trim(),
-      replyTo: document.getElementById('f_replyTo').value.trim(),
-      returnPath: document.getElementById('f_returnPath').value.trim(),
-      recipients: document.getElementById('f_recipients').value.trim(),
-      subject: document.getElementById('f_subject').value.trim(),
-      spf: document.getElementById('f_spf').value,
-      dkim: document.getElementById('f_dkim').value,
-      dmarc: document.getElementById('f_dmarc').value,
-      origIp: document.getElementById('f_origIp').value.trim(),
-      hash: document.getElementById('f_hash').value.trim(),
-      user: document.getElementById('f_user').value.trim(),
-      urlsRaw: document.getElementById('f_urls').value.trim(),
+  function runScanFromParsed(){
+    if(!parsedEmail)return;
+    var p=parsedEmail;
+    var inputs={
+      sender:extractEmailAddr(p.from),
+      senderDisplay:p.from,
+      replyTo:extractEmailAddr(p.replyTo||''),
+      returnPath:p.returnPath,
+      recipients:p.to,
+      subject:p.subject,
+      spf:p.spf,
+      dkim:p.dkim,
+      dmarc:p.dmarc,
+      origIp:p.origIp,
+      user:'',
+      urls:p.urls,
+      attachments:p.attachments||[],
     };
+    inputs.domains=[];
+    inputs.urls.forEach(function(u){var d=extractDomain(u);if(d&&inputs.domains.indexOf(d)===-1)inputs.domains.push(d);});
+    if(inputs.sender&&inputs.sender.includes('@')){var sd=inputs.sender.split('@')[1];if(sd&&inputs.domains.indexOf(sd)===-1)inputs.domains.push(sd);}
+    executeScan(inputs);
+  }
 
-    // Extract URL list
-    inputs.urls = inputs.urlsRaw ? inputs.urlsRaw.split('\n').map(function(u){return u.trim();}).filter(Boolean) : [];
-    inputs.domains = [];
-    inputs.urls.forEach(function(u) {
-      var d = extractDomain(u);
-      if (d && inputs.domains.indexOf(d) === -1) inputs.domains.push(d);
-    });
+  async function executeScan(inputs){
+    var s=loadSettings();
+    var vtKey=s.vtKey||'';
+    var urlscanKey=s.urlscanKey||'';
 
-    // Sender domain
-    if (inputs.sender && inputs.sender.includes('@')) {
-      var sd = inputs.sender.split('@')[1];
-      if (sd && inputs.domains.indexOf(sd) === -1) inputs.domains.push(sd);
-    }
+    document.getElementById('previewPanel').style.display='none';
+    document.getElementById('inputPanel').style.display='none';
+    document.getElementById('progressPanel').style.display='block';
+    document.getElementById('resultsPanel').style.display='none';
+    logEntries=[];
 
-    // Show progress panel
-    document.getElementById('inputPanel').style.display = 'none';
-    document.getElementById('progressPanel').style.display = 'block';
-    document.getElementById('resultsPanel').style.display = 'none';
-    logEntries = [];
+    var score=0;
+    scanResults={inputs:inputs,domains:{},urls:{},ips:{},attachments:{},urlscans:{}};
 
-    var score = 0;
-    scanResults = { inputs: inputs, domains: {}, urls: {}, ips: {}, hash: null, urlscans: {} };
+    addLog('parse','Parsed email: '+inputs.domains.length+' domain(s), '+inputs.urls.length+' URL(s), '+(inputs.origIp?'1 IP':'0 IPs')+', '+inputs.attachments.length+' attachment(s)');
+    setLog('parse','done','IOCs extracted. Running enrichment...');
 
-    addLog('parse', 'Parsing inputs and extracting IOCs...');
-    setLog('parse', 'done', 'Parsed: ' + inputs.domains.length + ' domain(s), ' + inputs.urls.length + ' URL(s), ' + (inputs.origIp ? '1 IP' : '0 IPs') + (inputs.hash ? ', 1 hash' : ''));
-
-    // Auth score
-    if (inputs.dmarc === 'fail' || inputs.dmarc === 'none') score += 28;
-    if (inputs.spf === 'fail' || inputs.spf === 'softfail' || inputs.spf === 'none') score += 20;
-    if (inputs.dkim === 'fail' || inputs.dkim === 'none') score += 14;
-
-    // Mismatch score
-    var mismatch = inputs.sender && inputs.replyTo && inputs.sender !== inputs.replyTo;
-    if (mismatch) score += 10;
-    var rpMismatch = inputs.sender && inputs.returnPath && inputs.sender !== inputs.returnPath;
-    if (rpMismatch) score += 8;
+    // Auth scoring
+    if(inputs.dmarc==='fail'||inputs.dmarc==='none')score+=28;
+    if(inputs.spf==='fail'||inputs.spf==='softfail'||inputs.spf==='none')score+=20;
+    if(inputs.dkim==='fail'||inputs.dkim==='none')score+=14;
+    var mismatch=inputs.sender&&inputs.replyTo&&inputs.sender!==inputs.replyTo;
+    if(mismatch)score+=10;
+    var rpMismatch=inputs.sender&&inputs.returnPath&&inputs.sender!==inputs.returnPath;
+    if(rpMismatch)score+=8;
 
     // VT domain checks
-    for (var i = 0; i < inputs.domains.length; i++) {
-      var dom = inputs.domains[i];
-      var lid = 'dom_' + i;
-      addLog(lid, 'VirusTotal: domain lookup — ' + dom);
-      if (!vtKey) { setLog(lid, 'skip', 'Skipped (no VT key): ' + dom); scanResults.domains[dom] = null; continue; }
-      try {
-        await sleep(i > 0 ? 16000 : 0); // throttle VT 4 req/min
-        var res = await vtDomain(dom, vtKey);
-        scanResults.domains[dom] = res;
-        if (res) {
-          score += scoreFromStats(res);
-          var ageStr = '';
-          if (res.creation_date) {
-            var ageDays = domainAge(new Date(res.creation_date * 1000).toISOString());
-            scanResults.domains[dom].ageDays = ageDays;
-            if (ageDays !== null && ageDays < 7) score += 40;
-            else if (ageDays !== null && ageDays < 30) score += 20;
-            ageStr = ' · age ' + (ageDays !== null ? ageDays + 'd' : 'unknown');
-          }
-          setLog(lid, 'done', 'VT domain: ' + dom + ' — ' + (res.malicious > 0 ? res.malicious + ' malicious' : 'clean') + ageStr);
-        } else {
-          setLog(lid, 'done', 'VT domain: ' + dom + ' — no data');
-        }
-      } catch(e) { setLog(lid, 'err', 'VT domain failed: ' + dom + ' (' + e.message + ')'); scanResults.domains[dom] = null; }
+    for(var i=0;i<inputs.domains.length;i++){
+      var dom=inputs.domains[i];var lid='dom_'+i;
+      addLog(lid,'VirusTotal: domain — '+dom);
+      if(!vtKey){setLog(lid,'skip','Skipped (no VT key): '+dom);scanResults.domains[dom]=null;continue;}
+      try{
+        await sleep(i>0?16000:0);
+        var res=await vtDomain(dom,vtKey);
+        scanResults.domains[dom]=res;
+        if(res){
+          score+=scoreFromStats(res);
+          var ageStr='';
+          if(res.creation_date){var ageDays=domainAge(new Date(res.creation_date*1000).toISOString());scanResults.domains[dom].ageDays=ageDays;if(ageDays!==null&&ageDays<7)score+=40;else if(ageDays!==null&&ageDays<30)score+=20;ageStr=' · age '+(ageDays!==null?ageDays+'d':'unknown');}
+          setLog(lid,'done','VT domain: '+dom+' — '+(res.malicious>0?res.malicious+' malicious':'clean')+ageStr);
+        }else setLog(lid,'done','VT domain: '+dom+' — no data');
+      }catch(e){setLog(lid,'err','VT domain failed: '+dom+' ('+e.message+')');scanResults.domains[dom]=null;}
     }
 
-    // RDAP age for domains without VT creation_date
-    for (var j = 0; j < inputs.domains.length; j++) {
-      var d2 = inputs.domains[j];
-      var rd = scanResults.domains[d2];
-      if (rd && rd.ageDays !== undefined) continue;
-      var rid = 'rdap_' + j;
-      addLog(rid, 'RDAP: domain age — ' + d2);
-      try {
-        var dateStr = await rdapAge(d2);
-        if (!scanResults.domains[d2]) scanResults.domains[d2] = {};
-        if (dateStr) {
-          var ageDaysRdap = domainAge(dateStr);
-          scanResults.domains[d2].ageDays = ageDaysRdap;
-          scanResults.domains[d2].rdapDate = dateStr;
-          if (ageDaysRdap !== null && ageDaysRdap < 7) score += 40;
-          else if (ageDaysRdap !== null && ageDaysRdap < 30) score += 20;
-          setLog(rid, 'done', 'RDAP: ' + d2 + ' — registered ' + ageDaysRdap + ' days ago');
-        } else {
-          setLog(rid, 'skip', 'RDAP: ' + d2 + ' — no registration data');
-        }
-      } catch(e) { setLog(rid, 'skip', 'RDAP: ' + d2 + ' — unavailable'); }
+    // RDAP age fallback
+    for(var j=0;j<inputs.domains.length;j++){
+      var d2=inputs.domains[j];var rd=scanResults.domains[d2];
+      if(rd&&rd.ageDays!==undefined)continue;
+      var rid='rdap_'+j;
+      addLog(rid,'RDAP: domain age — '+d2);
+      try{
+        var dateStr=await rdapAge(d2);
+        if(!scanResults.domains[d2])scanResults.domains[d2]={};
+        if(dateStr){var ageDaysR=domainAge(dateStr);scanResults.domains[d2].ageDays=ageDaysR;scanResults.domains[d2].rdapDate=dateStr;if(ageDaysR!==null&&ageDaysR<7)score+=40;else if(ageDaysR!==null&&ageDaysR<30)score+=20;setLog(rid,'done','RDAP: '+d2+' — '+ageDaysR+'d old');}
+        else setLog(rid,'skip','RDAP: '+d2+' — no registration data');
+      }catch(e){setLog(rid,'skip','RDAP: '+d2+' — unavailable');}
     }
 
     // VT URL checks
-    for (var k = 0; k < inputs.urls.length; k++) {
-      var rawUrl = inputs.urls[k];
-      var cleanUrl = refang(rawUrl);
-      var ulid = 'url_' + k;
-      addLog(ulid, 'VirusTotal: URL reputation — ' + rawUrl.substring(0, 50));
-      if (!vtKey) { setLog(ulid, 'skip', 'Skipped (no VT key): URL ' + (k+1)); scanResults.urls[rawUrl] = null; continue; }
-      try {
-        await sleep(k > 0 ? 16000 : 0);
-        var ures = await vtUrl(cleanUrl, vtKey);
-        scanResults.urls[rawUrl] = ures;
-        if (ures) {
-          score += scoreFromStats(ures);
-          setLog(ulid, 'done', 'VT URL: ' + (ures.malicious > 0 ? ures.malicious + ' malicious engines' : 'clean'));
-        } else {
-          setLog(ulid, 'done', 'VT URL: not in database');
-        }
-      } catch(e) { setLog(ulid, 'err', 'VT URL failed (' + e.message + ')'); scanResults.urls[rawUrl] = null; }
+    for(var k=0;k<inputs.urls.length;k++){
+      var rawUrl=inputs.urls[k];var cleanUrl=refang(rawUrl);var ulid='url_'+k;
+      addLog(ulid,'VirusTotal: URL — '+rawUrl.substring(0,55));
+      if(!vtKey){setLog(ulid,'skip','Skipped (no VT key): URL '+(k+1));scanResults.urls[rawUrl]=null;continue;}
+      try{
+        await sleep(k>0?16000:0);
+        var ures=await vtUrl(cleanUrl,vtKey);
+        scanResults.urls[rawUrl]=ures;
+        if(ures){score+=scoreFromStats(ures);setLog(ulid,'done','VT URL: '+(ures.malicious>0?ures.malicious+' malicious engines':'clean'));}
+        else setLog(ulid,'done','VT URL: not in database');
+      }catch(e){setLog(ulid,'err','VT URL failed ('+e.message+')');scanResults.urls[rawUrl]=null;}
     }
 
-    // URLScan
-    if (urlscanKey && inputs.urls.length) {
-      var firstUrl = refang(inputs.urls[0]);
-      addLog('urlscan', 'URLScan.io: submitting — ' + firstUrl.substring(0, 50));
-      var uuid = await urlscanSubmit(firstUrl, urlscanKey);
-      if (uuid) {
-        setLog('urlscan', 'running', 'URLScan.io: scan in progress, waiting for result...');
-        var usResult = await urlscanResult(uuid);
-        if (usResult) {
-          scanResults.urlscans[firstUrl] = usResult;
-          var uov = usResult.verdicts && usResult.verdicts.overall;
-          if (uov && uov.malicious) score += 30;
-          setLog('urlscan', 'done', 'URLScan: ' + (uov ? (uov.malicious ? 'MALICIOUS' : 'clean') : 'complete') + ' — ' + (usResult.resultURL || ''));
-        } else {
-          setLog('urlscan', 'skip', 'URLScan result not ready in time — check manually');
-        }
-      } else {
-        setLog('urlscan', 'err', 'URLScan submission failed');
-      }
+    // URLScan (first URL)
+    if(urlscanKey&&inputs.urls.length){
+      var firstUrl=refang(inputs.urls[0]);
+      addLog('urlscan','URLScan.io: '+firstUrl.substring(0,55));
+      var uuid=await urlscanSubmit(firstUrl,urlscanKey);
+      if(uuid){
+        setLog('urlscan','running','URLScan.io: scan running, waiting...');
+        var usResult=await urlscanResult(uuid);
+        if(usResult){
+          scanResults.urlscans[firstUrl]=usResult;
+          var uov=usResult.verdicts&&usResult.verdicts.overall;
+          if(uov&&uov.malicious)score+=30;
+          setLog('urlscan','done','URLScan: '+(uov?(uov.malicious?'MALICIOUS':'clean'):'complete')+' — '+(usResult.resultURL||''));
+        }else setLog('urlscan','skip','URLScan result not ready — check manually');
+      }else setLog('urlscan','err','URLScan submission failed');
     }
 
     // VT IP check
-    if (inputs.origIp) {
-      addLog('ip', 'VirusTotal: IP lookup — ' + inputs.origIp);
-      if (!vtKey) { setLog('ip', 'skip', 'Skipped (no VT key): IP lookup'); scanResults.ips[inputs.origIp] = null; }
-      else {
-        try {
+    if(inputs.origIp){
+      addLog('ip','VirusTotal: IP — '+inputs.origIp);
+      if(!vtKey){setLog('ip','skip','Skipped (no VT key)');scanResults.ips[inputs.origIp]=null;}
+      else{
+        try{
           await sleep(16000);
-          var ipres = await vtIp(inputs.origIp, vtKey);
-          scanResults.ips[inputs.origIp] = ipres;
-          if (ipres) {
-            score += Math.min(25, (ipres.malicious || 0) * 3);
-            setLog('ip', 'done', 'VT IP: ' + (ipres.malicious > 0 ? ipres.malicious + ' malicious' : 'clean') + (ipres.country ? ' · ' + ipres.country : ''));
-          } else { setLog('ip', 'done', 'VT IP: no data'); }
-        } catch(e) { setLog('ip', 'err', 'VT IP failed (' + e.message + ')'); }
+          var ipres=await vtIp(inputs.origIp,vtKey);
+          scanResults.ips[inputs.origIp]=ipres;
+          if(ipres){score+=Math.min(25,(ipres.malicious||0)*3);setLog('ip','done','VT IP: '+(ipres.malicious>0?ipres.malicious+' malicious':'clean')+(ipres.country?' · '+ipres.country:''));}
+          else setLog('ip','done','VT IP: no data');
+        }catch(e){setLog('ip','err','VT IP failed ('+e.message+')');}
       }
     }
 
-    // VT hash check
-    if (inputs.hash) {
-      addLog('hash', 'VirusTotal: file hash — ' + inputs.hash.substring(0, 16) + '...');
-      if (!vtKey) { setLog('hash', 'skip', 'Skipped (no VT key): hash lookup'); scanResults.hash = null; }
-      else {
-        try {
-          await sleep(16000);
-          var hres = await vtHash(inputs.hash, vtKey);
-          scanResults.hash = hres;
-          if (hres) {
-            if (hres.malicious > 0) score += 60;
-            setLog('hash', 'done', 'VT hash: ' + (hres.malicious > 0 ? 'MALICIOUS — ' + hres.malicious + ' engines' : 'clean') + (hres.type ? ' · ' + hres.type : ''));
-          } else { setLog('hash', 'done', 'VT hash: not in database (undetected or unknown)'); }
-        } catch(e) { setLog('hash', 'err', 'VT hash failed (' + e.message + ')'); }
-      }
+    // VT hash check for each attachment
+    for(var a=0;a<inputs.attachments.length;a++){
+      var att=inputs.attachments[a];
+      if(!att.sha256)continue;
+      var hid='hash_'+a;
+      addLog(hid,'VirusTotal: attachment hash — '+att.name);
+      if(!vtKey){setLog(hid,'skip','Skipped (no VT key): '+att.name);scanResults.attachments[att.sha256]=null;continue;}
+      try{
+        await sleep(16000);
+        var hres=await vtHash(att.sha256,vtKey);
+        scanResults.attachments[att.sha256]=hres;
+        if(hres&&hres.malicious>0)score+=60;
+        setLog(hid,'done','VT hash: '+att.name+' — '+(hres?(hres.malicious>0?'MALICIOUS — '+hres.malicious+' engines':'clean'):'not in database'));
+      }catch(e){setLog(hid,'err','VT hash failed: '+att.name+' ('+e.message+')');}
     }
 
-    addLog('build', 'Building investigation report...');
-    score = Math.min(100, score);
+    addLog('build','Building investigation report...');
+    score=Math.min(100,score);
     await sleep(400);
-    setLog('build', 'done', 'Report ready. Risk score: ' + score + '/100');
+    setLog('build','done','Report ready. Risk score: '+score+'/100');
     await sleep(300);
-
-    renderResults(inputs, score);
+    renderResults(inputs,score);
   }
 
-  // ── RENDER RESULTS ──────────────────────────────────────────────────────────
-  function renderResults(inputs, score) {
-    document.getElementById('progressPanel').style.display = 'none';
-    document.getElementById('resultsPanel').style.display = 'block';
+  // ── RENDER RESULTS ───────────────────────────────────────────────────────────
+  function renderResults(inputs,score){
+    document.getElementById('progressPanel').style.display='none';
+    document.getElementById('resultsPanel').style.display='block';
 
-    var vLabel = verdictLabel(score);
-    var vClass = verdictClass(score);
+    var vLabel=verdictLabel(score);
+    var vClass=verdictClass(score);
+    var flaggedDomains=Object.values(scanResults.domains).filter(function(d){return d&&(d.malicious>0||d.suspicious>0);}).length;
+    var flaggedUrls=Object.values(scanResults.urls).filter(function(u){return u&&(u.malicious>0||u.suspicious>0);}).length;
+    var flaggedAttachments=Object.values(scanResults.attachments).filter(function(h){return h&&h.malicious>0;}).length;
+    var authFail=(inputs.spf&&inputs.spf!=='pass')||(inputs.dkim&&inputs.dkim!=='pass')||(inputs.dmarc&&inputs.dmarc!=='pass');
 
-    // Count flagged IOCs
-    var flaggedDomains = Object.values(scanResults.domains).filter(function(d){ return d && (d.malicious > 0 || d.suspicious > 0); }).length;
-    var flaggedUrls = Object.values(scanResults.urls).filter(function(u){ return u && (u.malicious > 0 || u.suspicious > 0); }).length;
-    var flaggedHash = scanResults.hash && scanResults.hash.malicious > 0;
-
-    // Verdict banner
-    var authFail = (inputs.spf && inputs.spf !== 'pass') || (inputs.dkim && inputs.dkim !== 'pass') || (inputs.dmarc && inputs.dmarc !== 'pass');
-    var vBanner = '<div class="verdict-row"><div class="verdict-label">' + vLabel + '</div><div class="verdict-score">Risk Score: <span>' + score + '</span>/100</div></div>';
-    vBanner += '<div class="verdict-stats">';
-    if (flaggedDomains > 0) vBanner += '<div class="vstat flagged">' + flaggedDomains + ' DOMAIN(S) FLAGGED</div>';
-    else vBanner += '<div class="vstat clean">DOMAINS CLEAN</div>';
-    if (flaggedUrls > 0) vBanner += '<div class="vstat flagged">' + flaggedUrls + ' URL(S) FLAGGED</div>';
-    else if (inputs.urls.length > 0) vBanner += '<div class="vstat clean">URLS CLEAN</div>';
-    if (flaggedHash) vBanner += '<div class="vstat flagged">HASH MALICIOUS</div>';
-    else if (inputs.hash) vBanner += '<div class="vstat clean">HASH CLEAN</div>';
-    if (authFail) vBanner += '<div class="vstat flagged">AUTH FAILURES</div>';
-    vBanner += '</div>';
-
-    var vEl = document.getElementById('verdictBanner');
-    vEl.innerHTML = vBanner;
-    vEl.className = 'verdict-banner ' + vClass;
+    var vBanner='<div class="verdict-row"><div class="verdict-label">'+vLabel+'</div><div class="verdict-score">Risk Score: <span>'+score+'</span>/100</div></div>';
+    vBanner+='<div class="verdict-stats">';
+    if(flaggedDomains>0)vBanner+='<div class="vstat flagged">'+flaggedDomains+' DOMAIN(S) FLAGGED</div>';
+    else if(inputs.domains&&inputs.domains.length>0)vBanner+='<div class="vstat clean">DOMAINS CLEAN</div>';
+    if(flaggedUrls>0)vBanner+='<div class="vstat flagged">'+flaggedUrls+' URL(S) FLAGGED</div>';
+    else if(inputs.urls.length>0)vBanner+='<div class="vstat clean">URLS CLEAN</div>';
+    if(flaggedAttachments>0)vBanner+='<div class="vstat flagged">'+flaggedAttachments+' ATTACHMENT(S) MALICIOUS</div>';
+    else if(inputs.attachments.length>0)vBanner+='<div class="vstat clean">ATTACHMENTS CLEAN</div>';
+    if(authFail)vBanner+='<div class="vstat flagged">AUTH FAILURES</div>';
+    vBanner+='</div>';
+    var vEl=document.getElementById('verdictBanner');
+    vEl.innerHTML=vBanner;vEl.className='verdict-banner '+vClass;
 
     // IOC Cards
-    var cards = '';
-
-    // Sender
-    if (inputs.sender) {
-      var senderDom = inputs.sender.includes('@') ? inputs.sender.split('@')[1] : null;
-      var sRes = senderDom ? (scanResults.domains[senderDom] || null) : null;
-      cards += '<div class="ioc-card"><div class="ioc-card-header"><div><div class="ioc-card-label">SENDER DOMAIN</div><div class="ioc-card-value">' + esc(inputs.sender) + '</div></div>' + iocBadge(sRes) + '</div>';
-      if (sRes) {
-        var ageInfo = sRes.ageDays !== undefined ? (sRes.ageDays + ' days old') : (sRes.rdapDate ? sRes.rdapDate.split('T')[0] : null);
-        cards += '<div class="ioc-card-details">';
-        cards += '<span class="ioc-detail' + (sRes.malicious > 0 ? ' highlight' : '') + '">' + (sRes.malicious + sRes.suspicious) + '/' + sRes.total + ' engines</span>';
-        if (ageInfo) cards += '<span class="ioc-detail' + (sRes.ageDays !== undefined && sRes.ageDays < 30 ? ' highlight' : '') + '">Age: ' + esc(ageInfo) + '</span>';
-        cards += '</div>';
-      }
-      if (inputs.replyTo && inputs.replyTo !== inputs.sender) cards += '<div class="ioc-card-details"><span class="ioc-detail highlight">Reply-To mismatch: ' + esc(inputs.replyTo) + '</span></div>';
-      if (inputs.returnPath && inputs.returnPath !== inputs.sender) cards += '<div class="ioc-card-details"><span class="ioc-detail highlight">Return-Path mismatch: ' + esc(inputs.returnPath) + '</span></div>';
-      cards += '</div>';
+    var cards='';
+    if(inputs.sender){
+      var senderDom=inputs.sender.includes('@')?inputs.sender.split('@')[1]:null;
+      var sRes=senderDom?(scanResults.domains[senderDom]||null):null;
+      cards+='<div class="ioc-card"><div class="ioc-card-header"><div><div class="ioc-card-label">SENDER</div><div class="ioc-card-value">'+esc(inputs.senderDisplay||inputs.sender)+'</div></div>'+iocBadge(sRes)+'</div>';
+      if(sRes){var ai=sRes.ageDays!==undefined?(sRes.ageDays+'d old'):null;cards+='<div class="ioc-card-details"><span class="ioc-detail'+(sRes.malicious>0?' highlight':'')+'">'+((sRes.malicious||0)+(sRes.suspicious||0))+'/'+sRes.total+' engines</span>';if(ai)cards+='<span class="ioc-detail'+(sRes.ageDays<30?' highlight':'')+'">Age: '+esc(ai)+'</span>';cards+='</div>';}
+      if(inputs.replyTo&&inputs.replyTo!==inputs.sender)cards+='<div class="ioc-card-details"><span class="ioc-detail highlight">Reply-To mismatch: '+esc(inputs.replyTo)+'</span></div>';
+      if(inputs.returnPath&&inputs.returnPath!==inputs.sender)cards+='<div class="ioc-card-details"><span class="ioc-detail highlight">Return-Path mismatch: '+esc(inputs.returnPath)+'</span></div>';
+      cards+='</div>';
     }
 
-    // Domains from URLs
-    inputs.domains.forEach(function(d) {
-      if (inputs.sender && inputs.sender.includes('@') && inputs.sender.split('@')[1] === d) return;
-      var dr = scanResults.domains[d];
-      cards += '<div class="ioc-card"><div class="ioc-card-header"><div><div class="ioc-card-label">DOMAIN</div><div class="ioc-card-value">' + esc(d) + '</div></div>' + iocBadge(dr) + '</div>';
-      if (dr) {
-        var ageInfo2 = dr.ageDays !== undefined ? (dr.ageDays + ' days old') : null;
-        cards += '<div class="ioc-card-details">';
-        cards += '<span class="ioc-detail' + (dr.malicious > 0 ? ' highlight' : '') + '">' + (dr.malicious + dr.suspicious) + '/' + dr.total + ' engines</span>';
-        if (ageInfo2) cards += '<span class="ioc-detail' + (dr.ageDays < 30 ? ' highlight' : '') + '">Age: ' + esc(ageInfo2) + '</span>';
-        cards += '</div>';
-      }
-      cards += '</div>';
+    (inputs.domains||[]).forEach(function(d){
+      if(inputs.sender&&inputs.sender.includes('@')&&inputs.sender.split('@')[1]===d)return;
+      var dr=scanResults.domains[d];
+      cards+='<div class="ioc-card"><div class="ioc-card-header"><div><div class="ioc-card-label">DOMAIN</div><div class="ioc-card-value">'+esc(d)+'</div></div>'+iocBadge(dr)+'</div>';
+      if(dr){var ai2=dr.ageDays!==undefined?(dr.ageDays+'d old'):null;cards+='<div class="ioc-card-details"><span class="ioc-detail'+(dr.malicious>0?' highlight':'')+'">'+((dr.malicious||0)+(dr.suspicious||0))+'/'+dr.total+' engines</span>';if(ai2)cards+='<span class="ioc-detail'+(dr.ageDays<30?' highlight':'')+'">Age: '+esc(ai2)+'</span>';cards+='</div>';}
+      cards+='</div>';
     });
 
-    // URLs
-    inputs.urls.forEach(function(u) {
-      var ur = scanResults.urls[u];
-      cards += '<div class="ioc-card"><div class="ioc-card-header"><div><div class="ioc-card-label">URL</div><div class="ioc-card-value">' + esc(u) + '</div></div>' + iocBadge(ur) + '</div>';
-      if (ur && (ur.malicious + ur.suspicious) > 0) {
-        cards += '<div class="ioc-card-details"><span class="ioc-detail highlight">' + (ur.malicious + ur.suspicious) + '/' + ur.total + ' engines flagged</span></div>';
-      }
-      // URLScan result
-      var usKey = refang(u);
-      var usRes = scanResults.urlscans[usKey];
-      if (usRes) {
-        var uov = usRes.verdicts && usRes.verdicts.overall;
-        cards += '<div class="ioc-card-details"><span class="ioc-detail' + (uov && uov.malicious ? ' highlight' : '') + '">URLScan: ' + (uov ? (uov.malicious ? 'malicious' : 'clean') : 'complete') + '</span>';
-        if (usRes.resultURL) cards += '<a class="quick-btn" href="' + esc(usRes.resultURL) + '" target="_blank" rel="noopener" style="font-size:0.5rem;padding:1px 8px;">VIEW SCAN ↗</a>';
-        cards += '</div>';
-      }
-      cards += '</div>';
+    inputs.urls.forEach(function(u){
+      var ur=scanResults.urls[u];
+      cards+='<div class="ioc-card"><div class="ioc-card-header"><div><div class="ioc-card-label">URL</div><div class="ioc-card-value">'+esc(u)+'</div></div>'+iocBadge(ur)+'</div>';
+      if(ur&&(ur.malicious+ur.suspicious)>0)cards+='<div class="ioc-card-details"><span class="ioc-detail highlight">'+((ur.malicious||0)+(ur.suspicious||0))+'/'+ur.total+' engines</span></div>';
+      var usRes=scanResults.urlscans[refang(u)];
+      if(usRes){var uov=usRes.verdicts&&usRes.verdicts.overall;cards+='<div class="ioc-card-details"><span class="ioc-detail'+(uov&&uov.malicious?' highlight':'')+'">URLScan: '+(uov?(uov.malicious?'malicious':'clean'):'complete')+'</span>';if(usRes.resultURL)cards+='<a class="quick-btn" href="'+esc(usRes.resultURL)+'" target="_blank" rel="noopener" style="font-size:0.5rem;padding:1px 8px;">VIEW SCAN &#8599;</a>';cards+='</div>';}
+      cards+='</div>';
     });
 
-    // IP
-    if (inputs.origIp) {
-      var ir = scanResults.ips[inputs.origIp];
-      cards += '<div class="ioc-card"><div class="ioc-card-header"><div><div class="ioc-card-label">X-ORIGINATING-IP</div><div class="ioc-card-value">' + esc(inputs.origIp) + '</div></div>' + iocBadge(ir) + '</div>';
-      if (ir) {
-        cards += '<div class="ioc-card-details">';
-        if (ir.country) cards += '<span class="ioc-detail">Country: ' + esc(ir.country) + '</span>';
-        if (ir.as_owner) cards += '<span class="ioc-detail">ASN: ' + esc(ir.as_owner) + '</span>';
-        if (ir.malicious > 0) cards += '<span class="ioc-detail highlight">' + ir.malicious + '/' + ir.total + ' engines</span>';
-        cards += '</div>';
-      }
-      cards += '</div>';
+    if(inputs.origIp){
+      var ir=scanResults.ips[inputs.origIp];
+      cards+='<div class="ioc-card"><div class="ioc-card-header"><div><div class="ioc-card-label">X-ORIGINATING-IP</div><div class="ioc-card-value">'+esc(inputs.origIp)+'</div></div>'+iocBadge(ir)+'</div>';
+      if(ir){cards+='<div class="ioc-card-details">';if(ir.country)cards+='<span class="ioc-detail">Country: '+esc(ir.country)+'</span>';if(ir.as_owner)cards+='<span class="ioc-detail">ASN: '+esc(ir.as_owner)+'</span>';if(ir.malicious>0)cards+='<span class="ioc-detail highlight">'+ir.malicious+'/'+ir.total+' engines</span>';cards+='</div>';}
+      cards+='</div>';
     }
 
-    // Hash
-    if (inputs.hash) {
-      var hr = scanResults.hash;
-      cards += '<div class="ioc-card"><div class="ioc-card-header"><div><div class="ioc-card-label">FILE HASH</div><div class="ioc-card-value" style="font-size:0.6rem">' + esc(inputs.hash) + '</div></div>' + iocBadge(hr) + '</div>';
-      if (hr) {
-        cards += '<div class="ioc-card-details">';
-        if (hr.type) cards += '<span class="ioc-detail">Type: ' + esc(hr.type) + '</span>';
-        if (hr.name) cards += '<span class="ioc-detail">Name: ' + esc(hr.name) + '</span>';
-        if (hr.malicious > 0) cards += '<span class="ioc-detail highlight">' + hr.malicious + '/' + hr.total + ' detections</span>';
-        cards += '</div>';
-      }
-      cards += '</div>';
-    }
+    inputs.attachments.forEach(function(att){
+      var hr=att.sha256?scanResults.attachments[att.sha256]:null;
+      cards+='<div class="ioc-card"><div class="ioc-card-header"><div><div class="ioc-card-label">ATTACHMENT</div><div class="ioc-card-value">'+esc(att.name)+'</div></div>'+iocBadge(hr)+'</div>';
+      if(att.sha256)cards+='<div class="ioc-card-details"><span class="ioc-detail" style="font-size:0.5rem;word-break:break-all;">SHA256: '+esc(att.sha256)+'</span>'+(att.size?'<span class="ioc-detail">'+Math.round(att.size/1024)+' KB</span>':'')+'</div>';
+      if(hr&&hr.malicious>0)cards+='<div class="ioc-card-details"><span class="ioc-detail highlight">'+hr.malicious+'/'+hr.total+' detections</span>'+(hr.type?'<span class="ioc-detail">'+esc(hr.type)+'</span>':'')+'</div>';
+      cards+='</div>';
+    });
 
-    document.getElementById('iocCards').innerHTML = cards || '<div style="font-family:\'Share Tech Mono\',monospace;font-size:0.6rem;color:var(--muted)">No IOCs provided.</div>';
+    document.getElementById('iocCards').innerHTML=cards||'<div style="font-family:\'Share Tech Mono\',monospace;font-size:0.6rem;color:var(--muted)">No IOCs found.</div>';
 
     // Quick launch
-    var qr = '';
-    if (inputs.urls.length) {
-      var firstRefanged = encodeURIComponent(refang(inputs.urls[0]));
-      qr += '<a class="quick-btn" href="https://urlscan.io/search/#page.url:' + firstRefanged + '" target="_blank" rel="noopener">&#8599; URLScan.io</a>';
-      qr += '<a class="quick-btn" href="https://urlhaus.abuse.ch/browse.php?search=' + encodeURIComponent(extractDomain(inputs.urls[0]) || '') + '" target="_blank" rel="noopener">&#8599; URLhaus</a>';
-    }
-    if (inputs.origIp) {
-      qr += '<a class="quick-btn" href="https://www.abuseipdb.com/check/' + encodeURIComponent(inputs.origIp) + '" target="_blank" rel="noopener">&#8599; AbuseIPDB</a>';
-      qr += '<a class="quick-btn" href="https://www.shodan.io/host/' + encodeURIComponent(inputs.origIp) + '" target="_blank" rel="noopener">&#8599; Shodan</a>';
-    }
-    if (inputs.domains.length) {
-      qr += '<a class="quick-btn" href="https://whois.domaintools.com/' + encodeURIComponent(inputs.domains[0]) + '" target="_blank" rel="noopener">&#8599; WHOIS</a>';
-    }
-    qr += '<a class="quick-btn" href="https://mxtoolbox.com/EmailHeaders.aspx" target="_blank" rel="noopener">&#8599; MXToolbox Headers</a>';
-    document.getElementById('quickRow').innerHTML = qr;
+    var qr='';
+    if(inputs.urls.length){var fe=encodeURIComponent(refang(inputs.urls[0]));qr+='<a class="quick-btn" href="https://urlscan.io/search/#page.url:'+fe+'" target="_blank" rel="noopener">&#8599; URLScan.io</a>';qr+='<a class="quick-btn" href="https://urlhaus.abuse.ch/browse.php?search='+encodeURIComponent(extractDomain(inputs.urls[0])||'')+'" target="_blank" rel="noopener">&#8599; URLhaus</a>';}
+    if(inputs.origIp){qr+='<a class="quick-btn" href="https://www.abuseipdb.com/check/'+encodeURIComponent(inputs.origIp)+'" target="_blank" rel="noopener">&#8599; AbuseIPDB</a>';qr+='<a class="quick-btn" href="https://www.shodan.io/host/'+encodeURIComponent(inputs.origIp)+'" target="_blank" rel="noopener">&#8599; Shodan</a>';}
+    if(inputs.domains&&inputs.domains.length)qr+='<a class="quick-btn" href="https://whois.domaintools.com/'+encodeURIComponent(inputs.domains[0])+'" target="_blank" rel="noopener">&#8599; WHOIS</a>';
+    qr+='<a class="quick-btn" href="https://mxtoolbox.com/EmailHeaders.aspx" target="_blank" rel="noopener">&#8599; MXToolbox</a>';
+    document.getElementById('quickRow').innerHTML=qr;
 
     // Header summary
-    function authTag(val, field) {
-      if (!val) return '<span class="ioc-detail">'+field+': not provided</span>';
-      var ok = val === 'pass';
-      return '<span class="ioc-detail' + (!ok ? ' highlight' : '') + '">' + field + ': ' + val.toUpperCase() + '</span>';
-    }
-    var hsum = '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem;">';
-    hsum += authTag(inputs.spf, 'SPF') + authTag(inputs.dkim, 'DKIM') + authTag(inputs.dmarc, 'DMARC');
-    if (inputs.origIp) hsum += '<span class="ioc-detail">Origin IP: ' + esc(inputs.origIp) + '</span>';
-    hsum += '</div>';
-    if (authFail) {
-      hsum += '<div style="background:var(--warn-dim);border:1px solid rgba(245,158,11,0.3);border-radius:4px;padding:8px 12px;font-family:\'Exo 2\',sans-serif;font-size:0.67rem;color:var(--warn);">One or more auth checks failed. Combined with a lookalike sender domain, this meets escalation criteria.</div>';
-    }
-    document.getElementById('headerSummary').innerHTML = hsum;
+    function authTag(val,field){if(!val)return'<span class="ioc-detail">'+field+': not found</span>';var ok=val==='pass';return'<span class="ioc-detail'+(ok?'':' highlight')+'">'+field+': '+val.toUpperCase()+'</span>';}
+    var hsum='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem;">';
+    hsum+=authTag(inputs.spf,'SPF')+authTag(inputs.dkim,'DKIM')+authTag(inputs.dmarc,'DMARC');
+    if(inputs.origIp)hsum+='<span class="ioc-detail">Origin IP: '+esc(inputs.origIp)+'</span>';
+    hsum+='</div>';
+    if(authFail)hsum+='<div style="background:var(--warn-dim);border:1px solid rgba(245,158,11,0.3);border-radius:4px;padding:8px 12px;font-family:\'Exo 2\',sans-serif;font-size:0.67rem;color:var(--warn);">One or more auth checks failed. Combined with domain/URL findings, this may meet escalation criteria.</div>';
+    document.getElementById('headerSummary').innerHTML=hsum;
 
-    // Full checklist
     renderFullChecklist(inputs);
-
-    // Steps narrative
-    renderStepsNarrative(inputs, score, flaggedDomains, flaggedUrls, flaggedHash, authFail);
-
-    document.getElementById('resultsPanel').scrollIntoView({ behavior: 'smooth' });
+    renderStepsNarrative(inputs,score,flaggedDomains,flaggedUrls,flaggedAttachments,authFail);
+    document.getElementById('resultsPanel').scrollIntoView({behavior:'smooth'});
   }
 
-  // ── FULL CHECKLIST ──────────────────────────────────────────────────────────
-  function renderFullChecklist(inputs) {
-    var authFilled = inputs.spf && inputs.dkim && inputs.dmarc;
-    var vtRan = !!loadSettings().vtKey;
-    var rdapRan = true;
-    var senderMismatch = (inputs.sender && inputs.replyTo && inputs.sender !== inputs.replyTo) ||
-                         (inputs.sender && inputs.returnPath && inputs.sender !== inputs.returnPath);
+  // ── FULL CHECKLIST ───────────────────────────────────────────────────────────
+  function renderFullChecklist(inputs){
+    var vtRan=!!loadSettings().vtKey;
+    var senderMismatch=(inputs.sender&&inputs.replyTo&&inputs.sender!==inputs.replyTo)||
+                       (inputs.sender&&inputs.returnPath&&inputs.sender!==inputs.returnPath);
+    var hasAttachments=inputs.attachments&&inputs.attachments.length>0;
+    var hasHashes=hasAttachments&&inputs.attachments.some(function(a){return!!a.sha256;});
 
-    var STEPS_CL = [
-      { num:'01', name:'TRIAGE', items:[
-        { text:'Raw email (EML/MSG) obtained', auto: !!inputs.sender, note: inputs.sender ? 'Sender metadata provided via form' : null },
-        { text:'Sender / Reply-To / Return-Path mismatch noted', auto: !!inputs.sender, note: senderMismatch ? 'MISMATCH DETECTED — see IOC Analysis' : 'No mismatch detected' },
-        { text:'Internal vs external origin confirmed', auto: false, manual: true, note: 'Verify from email gateway logs' },
-        { text:'Recipients identified and logged', auto: !!inputs.recipients, note: inputs.recipients || null },
+    var STEPS_CL=[
+      {num:'01',name:'TRIAGE',items:[
+        {text:'Raw email (EML/MSG) obtained',auto:true,note:'EML parsed from file upload'},
+        {text:'Sender / Reply-To / Return-Path mismatch noted',auto:true,note:senderMismatch?'MISMATCH DETECTED — see IOC Analysis':'No mismatch detected'},
+        {text:'Internal vs external origin confirmed',auto:false,manual:true,note:'Verify against email gateway logs'},
+        {text:'Recipients identified and logged',auto:!!inputs.recipients,note:inputs.recipients||null},
       ]},
-      { num:'02', name:'HEADERS', items:[
-        { text:'Received chain traced hop-by-hop', auto: false, manual: true, note: 'Manual — paste raw headers into MXToolbox' },
-        { text:'SPF / DKIM / DMARC result captured', auto: authFilled, note: authFilled ? ('SPF: '+(inputs.spf||'-')+' · DKIM: '+(inputs.dkim||'-')+' · DMARC: '+(inputs.dmarc||'-')) : 'Fill in auth fields and rescan' },
-        { text:'X-Originating-IP cross-checked against threat intel', auto: vtRan && !!inputs.origIp, note: inputs.origIp ? (vtRan ? 'VT lookup completed — see IOC Analysis' : 'Provide VT key to auto-check') : 'No IP provided' },
-        { text:'Message-ID format reviewed for anomalies', auto: false, manual: true, note: 'Manual — check raw headers' },
-        { text:'Unexpected relay IPs or countries flagged', auto: false, manual: true, note: 'Manual — trace Received chain' },
+      {num:'02',name:'HEADERS',items:[
+        {text:'Received chain traced hop-by-hop',auto:false,manual:true,note:'Manual — paste headers into MXToolbox'},
+        {text:'SPF / DKIM / DMARC result captured',auto:!!(inputs.spf||inputs.dkim||inputs.dmarc),note:(inputs.spf||inputs.dkim||inputs.dmarc)?'SPF: '+(inputs.spf||'—')+' · DKIM: '+(inputs.dkim||'—')+' · DMARC: '+(inputs.dmarc||'—'):'Not found in Authentication-Results'},
+        {text:'X-Originating-IP cross-checked against threat intel',auto:vtRan&&!!inputs.origIp,note:inputs.origIp?(vtRan?'VT lookup completed — see IOC Analysis':'Provide VT key to auto-check'):'Not found in headers'},
+        {text:'Message-ID format reviewed for anomalies',auto:false,manual:true,note:'Manual — check raw headers'},
+        {text:'Unexpected relay IPs or countries flagged',auto:false,manual:true,note:'Manual — trace Received chain'},
       ]},
-      { num:'03', name:'URL TRIAGE', items:[
-        { text:'All URLs extracted (including encoded / obfuscated)', auto: inputs.urls.length > 0, note: inputs.urls.length + ' URL(s) provided' },
-        { text:'URLs defanged before sharing', auto: true, note: 'Auto — tool handles refanging internally' },
-        { text:'Redirect chains checked via URLScan (no direct visit)', auto: !!loadSettings().urlscanKey && inputs.urls.length > 0, note: loadSettings().urlscanKey ? 'URLScan.io scan submitted' : 'Add URLScan key to enable · use quick-launch link' },
-        { text:'Domain age checked via WHOIS / RDAP', auto: rdapRan && inputs.domains.length > 0, note: inputs.domains.length > 0 ? 'RDAP checked — see IOC Analysis for age' : 'No domains to check' },
-        { text:'Typosquatting / lookalike compared to legit sender domain', auto: false, manual: true, note: 'Manual — use dnstwist or visual comparison' },
-        { text:'URL destination type noted: login page / file / redirect', auto: false, manual: true, note: 'Manual — check URLScan result screenshot' },
+      {num:'03',name:'URL TRIAGE',items:[
+        {text:'All URLs extracted from email body',auto:inputs.urls.length>0,note:inputs.urls.length+' URL(s) extracted from parsed body'},
+        {text:'URLs defanged before sharing',auto:true,note:'Auto — handled internally'},
+        {text:'Redirect chains checked via URLScan',auto:!!loadSettings().urlscanKey&&inputs.urls.length>0,note:loadSettings().urlscanKey?'URLScan.io scan submitted':'Add URLScan key to enable'},
+        {text:'Domain age checked via WHOIS / RDAP',auto:inputs.domains&&inputs.domains.length>0,note:inputs.domains&&inputs.domains.length>0?'RDAP checked — see IOC Analysis':'No domains found'},
+        {text:'Typosquatting / lookalike compared to legit sender domain',auto:false,manual:true,note:'Manual — visual comparison or dnstwist'},
+        {text:'URL destination type noted: login page / file / redirect',auto:false,manual:true,note:'Manual — check URLScan screenshot'},
       ]},
-      { num:'04', name:'ATTACHMENT', items:[
-        { text:'File hash checked on VirusTotal before detonation', auto: vtRan && !!inputs.hash, note: inputs.hash ? (vtRan ? 'VT hash lookup completed — see IOC Analysis' : 'Provide VT key') : 'No hash provided' },
-        { text:'File type and macro / script risk assessed', auto: false, manual: true, note: 'Manual — document file type' },
-        { text:'Detonated in isolated sandbox', auto: false, manual: true, note: 'Manual — use Any.run / Hybrid Analysis / Joe Sandbox' },
-        { text:'Process creation events reviewed', auto: false, manual: true, note: 'Manual — from sandbox report' },
-        { text:'Network callbacks and C2 IPs extracted', auto: false, manual: true, note: 'Manual — from sandbox report' },
-        { text:'All attachment IOCs documented', auto: !!inputs.hash, note: inputs.hash ? 'Hash logged in IOC Analysis' : 'Manual — document after sandbox' },
+      {num:'04',name:'ATTACHMENT',items:[
+        {text:'Attachments identified and extracted from email',auto:hasAttachments,note:hasAttachments?inputs.attachments.length+' attachment(s) found: '+inputs.attachments.map(function(a){return a.name;}).join(', '):'No attachments detected in parsed EML'},
+        {text:'SHA256 hash computed for each attachment',auto:hasHashes,note:hasHashes?'Computed via SubtleCrypto — see IOC Analysis':'Hash computation skipped (binary parse failed)'},
+        {text:'File hash checked on VirusTotal before detonation',auto:vtRan&&hasHashes,note:hasHashes?(vtRan?'VT hash check completed — see IOC Analysis':'Provide VT key'):'No hashes to check'},
+        {text:'File type and macro / script risk assessed',auto:false,manual:true,note:'Manual — review MIME type and file extension'},
+        {text:'Detonated in isolated sandbox',auto:false,manual:true,note:'Manual — Any.run / Hybrid Analysis / Joe Sandbox'},
+        {text:'Network callbacks and C2 IPs extracted',auto:false,manual:true,note:'Manual — from sandbox report'},
       ]},
-      { num:'05', name:'IDENTITY', items:[
-        { text:'Email gateway logs checked for click / open', auto: false, manual: true, note: 'Manual — check Proofpoint / gateway telemetry' },
-        { text:'Endpoint telemetry reviewed for affected user', auto: false, manual: true, note: 'Manual — check CrowdStrike / EDR' },
-        { text:'Okta logs pulled for ±2 hour window', auto: false, manual: true, note: 'Manual — Okta System Log, filter by ' + (inputs.user || 'affected user') },
-        { text:'New device / impossible travel events reviewed', auto: false, manual: true, note: 'Manual — Okta auth events' },
-        { text:'MFA bypass or downgrade attempts checked', auto: false, manual: true, note: 'Manual — Okta policy evaluation logs' },
-        { text:'Session token theft indicators checked', auto: false, manual: true, note: 'Manual — new geo/ASN sessions post-auth' },
-        { text:'Proxy logs checked for credential submission', auto: false, manual: true, note: 'Manual — network proxy / Zscaler logs' },
+      {num:'05',name:'IDENTITY',items:[
+        {text:'Email gateway logs checked for click / open',auto:false,manual:true,note:'Manual — check Proofpoint / gateway telemetry'},
+        {text:'Endpoint telemetry reviewed for affected user',auto:false,manual:true,note:'Manual — check CrowdStrike / EDR'},
+        {text:'Okta logs pulled for ±2 hour window',auto:false,manual:true,note:'Manual — Okta System Log, filter by affected user'},
+        {text:'New device / impossible travel events reviewed',auto:false,manual:true,note:'Manual — Okta auth events'},
+        {text:'MFA bypass or downgrade attempts checked',auto:false,manual:true,note:'Manual — Okta policy evaluation logs'},
+        {text:'Session token theft indicators checked',auto:false,manual:true,note:'Manual — new geo/ASN sessions post-auth'},
+        {text:'Proxy logs checked for credential submission',auto:false,manual:true,note:'Manual — network proxy / Zscaler'},
       ]},
-      { num:'06', name:'CONTAINMENT', items:[
-        { text:'Sender domain / IP blocked at email gateway', auto: false, manual: true, note: 'Manual action required — analyst approval' },
-        { text:'Delivered emails recalled / retracted', auto: false, manual: true, note: 'Manual action required' },
-        { text:'Malicious URLs / domains blocked at proxy and DNS', auto: false, manual: true, note: 'Manual action required' },
-        { text:'File hash blocked at endpoint', auto: false, manual: true, note: 'Manual action required — CrowdStrike or equivalent' },
-        { text:'Okta session suspended / tokens revoked (if applicable)', auto: false, manual: true, note: 'Manual action required — pending identity assessment' },
-        { text:'All evidence exported and preserved', auto: false, manual: true, note: 'Manual — EML, sandbox report, header analysis, Okta export' },
-        { text:'All IOCs documented before blocking', auto: true, note: 'Auto — IOC report generated above' },
+      {num:'06',name:'CONTAINMENT',items:[
+        {text:'Sender domain / IP blocked at email gateway',auto:false,manual:true,note:'Manual action required — analyst approval'},
+        {text:'Delivered emails recalled / retracted',auto:false,manual:true,note:'Manual action required'},
+        {text:'Malicious URLs / domains blocked at proxy and DNS',auto:false,manual:true,note:'Manual action required'},
+        {text:'File hash blocked at endpoint',auto:false,manual:true,note:'Manual action required — CrowdStrike or equivalent'},
+        {text:'Okta session suspended / tokens revoked if applicable',auto:false,manual:true,note:'Manual — pending identity assessment'},
+        {text:'All evidence exported and preserved',auto:false,manual:true,note:'Manual — EML, sandbox, header analysis, Okta export'},
+        {text:'All IOCs documented before blocking',auto:true,note:'Auto — IOC report generated above'},
       ]},
-      { num:'07', name:'CLOSURE', items:[
-        { text:'All IOCs blocked', auto: false, manual: true, note: 'Manual — confirm all blocking actions completed' },
-        { text:'Impacted users notified and remediated', auto: false, manual: true, note: inputs.user ? 'Affected user: ' + inputs.user : 'Manual' },
-        { text:'Ticket root cause and disposition documented', auto: false, manual: true, note: 'Manual — complete after full investigation' },
-        { text:'IOCs documented in structured format for downstream TI', auto: true, note: 'Auto — use Export button above' },
-        { text:'IR team notified if escalated', auto: false, manual: true, note: 'Manual — based on identity assessment outcome' },
+      {num:'07',name:'CLOSURE',items:[
+        {text:'All IOCs blocked',auto:false,manual:true,note:'Manual — confirm all blocking actions completed'},
+        {text:'Impacted users notified and remediated',auto:false,manual:true,note:'Manual'},
+        {text:'Ticket root cause and disposition documented',auto:false,manual:true,note:'Manual — complete after full investigation'},
+        {text:'IOCs exported in structured format for downstream TI',auto:true,note:'Auto — use Export button above'},
+        {text:'IR team notified if escalated',auto:false,manual:true,note:'Manual — based on identity assessment outcome'},
       ]},
     ];
 
-    var html = '';
-    STEPS_CL.forEach(function(step) {
-      var autoCount = step.items.filter(function(i){ return i.auto; }).length;
-      var total = step.items.length;
-      html += '<div class="cl-step">';
-      html += '<div class="cl-step-header" onclick="toggleCLStep(this)">';
-      html += '<div class="cl-step-num">' + step.num + '</div>';
-      html += '<div class="cl-step-name">' + step.name + '</div>';
-      html += '<div class="cl-step-progress">' + autoCount + '/' + total + ' verified</div>';
-      html += '<div class="cl-step-toggle">&#9660;</div></div>';
-      html += '<div class="cl-items">';
-      step.items.forEach(function(item) {
-        var iconCls, iconChar;
-        if (item.auto) { iconCls = 'cl-auto'; iconChar = '&#10003;'; }
-        else { iconCls = 'cl-manual'; iconChar = '&#9633;'; }
-        html += '<div class="cl-item"><div class="cl-icon ' + iconCls + '">' + iconChar + '</div>';
-        html += '<div><div class="cl-item-text">' + esc(item.text) + '<span class="cl-tag ' + (item.auto ? 'cl-tag-auto' : 'cl-tag-manual') + '">' + (item.auto ? 'AUTO' : 'MANUAL') + '</span></div>';
-        if (item.note) html += '<div class="cl-item-note">' + esc(item.note) + '</div>';
-        html += '</div></div>';
+    var html='';
+    STEPS_CL.forEach(function(step){
+      var autoCount=step.items.filter(function(i){return i.auto;}).length;
+      html+='<div class="cl-step">';
+      html+='<div class="cl-step-header" onclick="toggleCLStep(this)">';
+      html+='<div class="cl-step-num">'+step.num+'</div>';
+      html+='<div class="cl-step-name">'+step.name+'</div>';
+      html+='<div class="cl-step-progress">'+autoCount+'/'+step.items.length+' verified</div>';
+      html+='<div class="cl-step-toggle">&#9660;</div></div>';
+      html+='<div class="cl-items" style="display:flex;flex-direction:column;gap:5px;">';
+      step.items.forEach(function(item){
+        var iconCls=item.auto?'cl-auto':'cl-manual';
+        var iconChar=item.auto?'&#10003;':'&#9633;';
+        html+='<div class="cl-item"><div class="cl-icon '+iconCls+'">'+iconChar+'</div>';
+        html+='<div><div class="cl-item-text">'+esc(item.text)+'<span class="cl-tag '+(item.auto?'cl-tag-auto':'cl-tag-manual')+'">'+(item.auto?'AUTO':'MANUAL')+'</span></div>';
+        if(item.note)html+='<div class="cl-item-note">'+esc(item.note)+'</div>';
+        html+='</div></div>';
       });
-      html += '</div></div>';
+      html+='</div></div>';
     });
-    document.getElementById('checklistSteps').innerHTML = html;
+    document.getElementById('checklistSteps').innerHTML=html;
   }
 
-  function toggleCLStep(header) {
-    var items = header.nextElementSibling;
-    var tog = header.querySelector('.cl-step-toggle');
-    if (items.style.display === 'none') { items.style.display = 'flex'; tog.innerHTML = '&#9660;'; }
-    else { items.style.display = 'none'; tog.innerHTML = '&#9654;'; }
+  function toggleCLStep(header){
+    var items=header.nextElementSibling;
+    var tog=header.querySelector('.cl-step-toggle');
+    if(items.style.display==='none'){items.style.display='flex';tog.innerHTML='&#9660;';}
+    else{items.style.display='none';tog.innerHTML='&#9654;';}
   }
 
-  // ── STEPS NARRATIVE ─────────────────────────────────────────────────────────
-  function renderStepsNarrative(inputs, score, flaggedDomains, flaggedUrls, flaggedHash, authFail) {
-    var vtRan = !!loadSettings().vtKey;
-    var senderMismatch = (inputs.sender && inputs.replyTo && inputs.sender !== inputs.replyTo);
-
-    var notes = [
-      { num:'01', title:'Triage', text: inputs.sender ? ('Alert triaged. Sender: ' + inputs.sender + (inputs.subject ? ' · Subject: "' + inputs.subject + '"' : '') + (senderMismatch ? ' · Reply-To mismatch detected.' : '.')) : 'No sender metadata provided.' },
-      { num:'02', title:'Header Analysis', text: authFail ? ('Auth failures detected: SPF=' + (inputs.spf||'—') + ', DKIM=' + (inputs.dkim||'—') + ', DMARC=' + (inputs.dmarc||'—') + (inputs.origIp ? ' · Origin IP ' + inputs.origIp + ' checked.' : '') + ' Escalation criteria may be met.') : ('Auth results: SPF=' + (inputs.spf||'not checked') + ', DKIM=' + (inputs.dkim||'not checked') + ', DMARC=' + (inputs.dmarc||'not checked') + '. No failures detected.') },
-      { num:'03', title:'URL / Domain Triage', text: inputs.urls.length > 0 ? (inputs.urls.length + ' URL(s) analyzed. ' + (vtRan ? flaggedUrls + ' flagged by VirusTotal. ' : 'VT key not set — skip VT check. ') + inputs.domains.length + ' unique domain(s) checked via RDAP for registration age.') : 'No URLs provided for analysis.' },
-      { num:'04', title:'Attachment Sandbox', text: inputs.hash ? (vtRan ? ('Hash ' + inputs.hash.substring(0,12) + '... checked via VirusTotal. ' + (flaggedHash ? 'MALICIOUS — sandbox detonation confirmed required.' : 'Clean on VT. Sandbox detonation still recommended if attachment is present.')) : 'Hash provided but VT key not set — manual VT check required.') : 'No file hash provided. If attachment present, extract hash and rescan.' },
-      { num:'05', title:'Identity / Okta Impact', text: inputs.user ? ('Affected user: ' + inputs.user + '. Okta log pull required for ±2hr window. Check for new device, impossible travel, MFA bypass, session anomalies.') : 'No affected user provided. Pull Okta logs for all email recipients.' },
-      { num:'06', title:'Containment', text: 'Containment actions require analyst approval and are not automated. Use the checklist above as your action list. Ensure all IOCs are documented before any blocking.' },
-      { num:'07', title:'Closure', text: 'Complete the identity assessment and containment steps, then document root cause, disposition, and affected user count in your ticket. Export this report for downstream TI.' },
+  // ── STEPS NARRATIVE ──────────────────────────────────────────────────────────
+  function renderStepsNarrative(inputs,score,flaggedDomains,flaggedUrls,flaggedAttachments,authFail){
+    var vtRan=!!loadSettings().vtKey;
+    var senderMismatch=inputs.sender&&inputs.replyTo&&inputs.sender!==inputs.replyTo;
+    var notes=[
+      {num:'01',title:'Triage',text:inputs.sender?'Email parsed from EML. Sender: '+inputs.sender+(inputs.subject?' · Subject: "'+inputs.subject+'"':'')+(senderMismatch?' · Reply-To mismatch detected.':'.'):'No sender metadata found in headers.'},
+      {num:'02',title:'Header Analysis',text:authFail?'Auth failures: SPF='+(inputs.spf||'—')+', DKIM='+(inputs.dkim||'—')+', DMARC='+(inputs.dmarc||'—')+(inputs.origIp?' · Origin IP '+inputs.origIp+' checked.':'')+' Escalation criteria may be met.':'Auth: SPF='+(inputs.spf||'not found')+', DKIM='+(inputs.dkim||'not found')+', DMARC='+(inputs.dmarc||'not found')+'. No failures detected.'},
+      {num:'03',title:'URL / Domain Triage',text:inputs.urls.length>0?inputs.urls.length+' URL(s) extracted from email body. '+(vtRan?flaggedUrls+' flagged by VT. ':'VT key not set — skip VT URL check. ')+inputs.domains.length+' domain(s) checked via RDAP for registration age.':'No URLs found in parsed email body.'},
+      {num:'04',title:'Attachment Analysis',text:inputs.attachments.length>0?inputs.attachments.length+' attachment(s) found: '+inputs.attachments.map(function(a){return a.name;}).join(', ')+'. '+(vtRan?flaggedAttachments+' hash(es) flagged malicious by VT.':'VT key not set — manual hash check required.')+' Sandbox detonation required for any flagged attachment.':'No attachments found in parsed email.'},
+      {num:'05',title:'Identity / Okta Impact',text:'Okta log pull required for all identified recipients for ±2hr window. Check for new device, impossible travel, MFA bypass, session anomalies.'},
+      {num:'06',title:'Containment',text:'Containment actions require analyst approval and are not automated. Use the checklist above as your action list. Document all IOCs before blocking.'},
+      {num:'07',title:'Closure',text:'Complete identity assessment and containment steps. Document root cause, disposition, and affected user count in your ticket. Export this report for downstream TI.'},
     ];
-
-    document.getElementById('stepsNarrative').innerHTML = notes.map(function(n) {
-      return '<div class="step-note"><div class="step-note-num">' + n.num + '</div><div class="step-note-body"><div class="step-note-title">' + esc(n.title) + '</div><div class="step-note-text">' + esc(n.text) + '</div></div></div>';
+    document.getElementById('stepsNarrative').innerHTML=notes.map(function(n){
+      return'<div class="step-note"><div class="step-note-num">'+n.num+'</div><div class="step-note-body"><div class="step-note-title">'+esc(n.title)+'</div><div class="step-note-text">'+esc(n.text)+'</div></div></div>';
     }).join('');
   }
 
-  // ── EXPORT ───────────────────────────────────────────────────────────────────
-  function exportReport() {
-    var inputs = scanResults.inputs;
-    if (!inputs) return;
-    var lines = ['# PHISHOPS AUTO SCAN REPORT', 'Generated: ' + new Date().toISOString().replace('T',' ').split('.')[0], ''];
-
+  // ── EXPORT ────────────────────────────────────────────────────────────────────
+  function exportReport(){
+    var inputs=scanResults.inputs;
+    if(!inputs)return;
+    var lines=['# PHISHOPS AUTO SCAN REPORT','Generated: '+new Date().toISOString().replace('T',' ').split('.')[0],''];
+    var vlabel=document.querySelector('.verdict-label');
     lines.push('## VERDICT');
-    var score = parseInt(document.querySelector('.verdict-label') ? 0 : 0);
-    var vlabel = document.querySelector('.verdict-label');
-    lines.push('Risk: ' + (vlabel ? vlabel.textContent : 'see report'));
+    lines.push('Risk: '+(vlabel?vlabel.textContent:'see report'));
     lines.push('');
-
     lines.push('## EMAIL METADATA');
-    if (inputs.sender) lines.push('- Sender: ' + inputs.sender);
-    if (inputs.replyTo) lines.push('- Reply-To: ' + inputs.replyTo);
-    if (inputs.returnPath) lines.push('- Return-Path: ' + inputs.returnPath);
-    if (inputs.recipients) lines.push('- Recipients: ' + inputs.recipients);
-    if (inputs.subject) lines.push('- Subject: ' + inputs.subject);
+    if(inputs.senderDisplay||inputs.sender)lines.push('- From: '+(inputs.senderDisplay||inputs.sender));
+    if(inputs.replyTo)lines.push('- Reply-To: '+inputs.replyTo);
+    if(inputs.returnPath)lines.push('- Return-Path: '+inputs.returnPath);
+    if(inputs.recipients)lines.push('- To: '+inputs.recipients);
+    if(inputs.subject)lines.push('- Subject: '+inputs.subject);
     lines.push('');
-
     lines.push('## HEADER AUTH');
-    if (inputs.spf) lines.push('- SPF: ' + inputs.spf.toUpperCase());
-    if (inputs.dkim) lines.push('- DKIM: ' + inputs.dkim.toUpperCase());
-    if (inputs.dmarc) lines.push('- DMARC: ' + inputs.dmarc.toUpperCase());
-    if (inputs.origIp) lines.push('- X-Originating-IP: ' + inputs.origIp);
+    if(inputs.spf)lines.push('- SPF: '+inputs.spf.toUpperCase());
+    if(inputs.dkim)lines.push('- DKIM: '+inputs.dkim.toUpperCase());
+    if(inputs.dmarc)lines.push('- DMARC: '+inputs.dmarc.toUpperCase());
+    if(inputs.origIp)lines.push('- X-Originating-IP: '+inputs.origIp);
     lines.push('');
-
     lines.push('## IOC ENRICHMENT');
-    Object.keys(scanResults.domains).forEach(function(d) {
-      var r = scanResults.domains[d];
-      lines.push('Domain: ' + d + (r ? ' — ' + (r.malicious > 0 ? 'MALICIOUS (' + r.malicious + ' engines)' : 'clean') + (r.ageDays !== undefined ? ', age: ' + r.ageDays + 'd' : '') : ' — no data'));
-    });
-    inputs.urls.forEach(function(u) {
-      var r = scanResults.urls[u];
-      lines.push('URL: ' + u + (r ? ' — ' + (r.malicious > 0 ? 'MALICIOUS (' + r.malicious + ' engines)' : 'clean') : ' — no data'));
-    });
-    if (inputs.origIp) {
-      var ir = scanResults.ips[inputs.origIp];
-      lines.push('IP: ' + inputs.origIp + (ir ? ' — ' + (ir.malicious > 0 ? 'MALICIOUS (' + ir.malicious + ')' : 'clean') + (ir.country ? ', ' + ir.country : '') : ' — no data'));
-    }
-    if (inputs.hash) {
-      var hr = scanResults.hash;
-      lines.push('Hash: ' + inputs.hash + (hr ? ' — ' + (hr.malicious > 0 ? 'MALICIOUS (' + hr.malicious + ' detections)' : 'clean') : ' — not in VT database'));
-    }
+    Object.keys(scanResults.domains).forEach(function(d){var r=scanResults.domains[d];lines.push('Domain: '+d+(r?' — '+(r.malicious>0?'MALICIOUS ('+r.malicious+' engines)':'clean')+(r.ageDays!==undefined?', age: '+r.ageDays+'d':''):'— no data'));});
+    inputs.urls.forEach(function(u){var r=scanResults.urls[u];lines.push('URL: '+u+(r?' — '+(r.malicious>0?'MALICIOUS ('+r.malicious+' engines)':'clean'):'— no data'));});
+    if(inputs.origIp){var ir=scanResults.ips[inputs.origIp];lines.push('IP: '+inputs.origIp+(ir?' — '+(ir.malicious>0?'MALICIOUS ('+ir.malicious+')':'clean')+(ir.country?', '+ir.country:''):'— no data'));}
+    inputs.attachments.forEach(function(a){var hr=a.sha256?scanResults.attachments[a.sha256]:null;lines.push('Attachment: '+a.name+(a.sha256?' | SHA256: '+a.sha256:'')+(hr?' — '+(hr.malicious>0?'MALICIOUS ('+hr.malicious+' detections)':'clean'):''));});
     lines.push('');
-
     lines.push('## MANUAL ACTIONS REQUIRED');
-    lines.push('- [ ] Header relay chain traced');
-    lines.push('- [ ] Attachment detonated in sandbox (if present)');
-    lines.push('- [ ] Okta logs pulled for affected user (±2hr window)');
+    lines.push('- [ ] Header relay chain traced via MXToolbox');
+    lines.push('- [ ] Attachment(s) detonated in sandbox if not already confirmed clean');
+    lines.push('- [ ] Okta logs pulled for all recipients (±2hr window)');
     lines.push('- [ ] Containment actions executed (block/revoke/recall)');
     lines.push('- [ ] Ticket closed with root cause and disposition');
-
-    navigator.clipboard.writeText(lines.join('\n')).then(function() {
-      var btns = document.querySelectorAll('.btn-export-primary');
-      btns.forEach(function(b) { b.textContent = 'COPIED ✓'; setTimeout(function(){ b.textContent = 'COPY FULL REPORT'; }, 2000); });
+    navigator.clipboard.writeText(lines.join('\n')).then(function(){
+      var btns=document.querySelectorAll('.btn-export-primary');
+      btns.forEach(function(b){b.textContent='COPIED ✓';setTimeout(function(){b.textContent='COPY FULL REPORT';},2000);});
     });
   }
 
-  function resetScan() {
-    logEntries = [];
-    scanResults = {};
-    document.getElementById('inputPanel').style.display = 'block';
-    document.getElementById('progressPanel').style.display = 'none';
-    document.getElementById('resultsPanel').style.display = 'none';
+  function resetScan(){
+    logEntries=[];scanResults={};parsedEmail=null;
+    document.getElementById('inputPanel').style.display='block';
+    document.getElementById('previewPanel').style.display='none';
+    document.getElementById('progressPanel').style.display='none';
+    document.getElementById('resultsPanel').style.display='none';
+    document.getElementById('dzFileName').textContent='';
+    document.getElementById('emlFileInput').value='';
+    document.getElementById('msgWarn').style.display='none';
     window.scrollTo(0,0);
   }
 
   // ── NAV / THEME ───────────────────────────────────────────────────────────────
-  function toggleDrawer(){ document.getElementById('navDrawer').classList.toggle('open'); }
-  function closeDrawer(){ document.getElementById('navDrawer').classList.remove('open'); }
-  document.addEventListener('click', function(e){ var d=document.getElementById('navDrawer'),h=document.getElementById('hamburger'); if(d.classList.contains('open')&&!d.contains(e.target)&&!h.contains(e.target)) closeDrawer(); });
-
-  function updateLogo(t){ var el=document.getElementById('navLogo'); if(el) el.src=t==='light'?'https://raw.githubusercontent.com/h3ad-sec/h3ad-sec.github.io/main/logo-light.png':'https://raw.githubusercontent.com/h3ad-sec/h3ad-sec.github.io/main/logo-dark.png'; }
-  function toggleTheme(){ var l=document.body.classList.toggle('light'); document.body.classList.toggle('dark',!l); var t=l?'light':'dark'; localStorage.setItem('h3ad-theme',t); updateLogo(t); }
-  (function(){ var t=localStorage.getItem('h3ad-theme'); if(t==='light'){document.body.classList.add('light');document.body.classList.remove('dark');updateLogo('light');}else{document.body.classList.add('dark');document.body.classList.remove('light');} })();
+  function toggleDrawer(){document.getElementById('navDrawer').classList.toggle('open');}
+  function closeDrawer(){document.getElementById('navDrawer').classList.remove('open');}
+  document.addEventListener('click',function(e){var d=document.getElementById('navDrawer'),h=document.getElementById('hamburger');if(d.classList.contains('open')&&!d.contains(e.target)&&!h.contains(e.target))closeDrawer();});
+  function updateLogo(t){var el=document.getElementById('navLogo');if(el)el.src=t==='light'?'https://raw.githubusercontent.com/h3ad-sec/h3ad-sec.github.io/main/logo-light.png':'https://raw.githubusercontent.com/h3ad-sec/h3ad-sec.github.io/main/logo-dark.png';}
+  function toggleTheme(){var l=document.body.classList.toggle('light');document.body.classList.toggle('dark',!l);var t=l?'light':'dark';localStorage.setItem('h3ad-theme',t);updateLogo(t);}
+  (function(){var t=localStorage.getItem('h3ad-theme');if(t==='light'){document.body.classList.add('light');document.body.classList.remove('dark');updateLogo('light');}else{document.body.classList.add('dark');document.body.classList.remove('light');}})();
   (function(){var pill=document.querySelector('.xv-nav-pill'),links=document.querySelector('.nav-links'),toggle=document.querySelector('.theme-toggle'),G=20;function check(){if(!links)return;document.body.classList.remove('nav-compact');links.style.visibility='hidden';var lr=links.getBoundingClientRect(),pr=pill?pill.getBoundingClientRect().right:60,tl=toggle?toggle.getBoundingClientRect().left:window.innerWidth-60;links.style.visibility='';document.body.classList.toggle('nav-compact',(pr+G>lr.left)||(lr.right+G>tl));}check();window.addEventListener('resize',check);})();
 
   checkKeyState();
+  initDropZone();
   </script>
 </body>
 </html>
