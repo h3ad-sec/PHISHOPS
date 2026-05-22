@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PHISHOPS - Phishing Investigation Tracker // H3AD-SEC</title>
+  <meta name="description" content="PHISHOPS by H3AD-SEC — Step-by-step phishing investigation tracker for SOC analysts. Header analysis, URL triage, sandbox, Okta impact, containment." />
+  <link rel="icon" href="https://h3ad-sec.github.io/fevicon.png?v=2026" type="image/png" />
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #080c14;
+      --panel: #0d1117;
+      --panel-alt: #111827;
+      --surface: #18253a;
+      --text: #e6edf3;
+      --text-dim: #96b0cc;
+      --muted: #6b7280;
+      --muted-dim: #3a5470;
+      --accent: #00d4ff;
+      --accent2: #58a6ff;
+      --border: #1c2333;
+      --border-dim: #111827;
+      --primary: #00d4ff;
+      --primary-dim: rgba(0,212,255,0.08);
+      --primary-glow: rgba(0,212,255,0.18);
+      --warn: #f59e0b;
+      --warn-dim: rgba(245,158,11,0.10);
+      --nav-h: 48px;
+    }
+    body.light {
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --panel-alt: #f1f5f9;
+      --surface: #ccd8ec;
+      --text: #0d1117;
+      --text-dim: #142540;
+      --muted: #5c6b8a;
+      --muted-dim: #5c7a9a;
+      --accent: #0284c7;
+      --accent2: #2563eb;
+      --border: #e2e8f0;
+      --border-dim: #f1f5f9;
+      --primary: #0284c7;
+      --primary-dim: rgba(2,132,199,0.07);
+      --primary-glow: rgba(2,132,199,0.14);
+      --warn: #d97706;
+      --warn-dim: rgba(217,119,6,0.08);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
+    body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;font-size:14px;line-height:1.6;min-height:100vh;overflow-x:hidden;transition:background 0.3s,color 0.3s;}
+    body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 45% at 50% 0%,rgba(0,212,255,0.055) 0%,transparent 100%),radial-gradient(ellipse 50% 35% at 5% 100%,rgba(88,166,255,0.04) 0%,transparent 100%);pointer-events:none;z-index:0;}
+    body.light::before{background:radial-gradient(ellipse 80% 45% at 50% 0%,rgba(2,132,199,0.05) 0%,transparent 100%),radial-gradient(ellipse 50% 35% at 5% 100%,rgba(37,99,235,0.03) 0%,transparent 100%);}
+    a{color:inherit;text-decoration:none;}
+
+    /* NAV */
+    .nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(8,12,20,0.92);border-bottom:1px solid var(--border);height:var(--nav-h);display:flex;align-items:center;padding:0 1.25rem;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);}
+    body.light .nav{background:rgba(242,245,250,0.92);}
+    .nav-brand{flex-shrink:0;margin-right:1rem;}.nav-brand img{height:22px;display:block;}
+    .xv-nav-pill{display:flex;flex-direction:column;align-items:flex-start;gap:1px;margin-left:10px;padding-left:10px;border-left:1px solid var(--border);white-space:nowrap;flex-shrink:0;}
+    .xv-pill-name{font-family:'Exo 2',sans-serif;font-weight:700;font-size:13px;letter-spacing:4px;line-height:1;}
+    .xv-pill-accent{color:var(--accent);}.xv-pill-text{color:var(--text);}
+    .xv-pill-tagline{font-family:'Exo 2',sans-serif;font-weight:400;font-size:8px;color:var(--muted);letter-spacing:1.5px;}
+    .nav-links{position:absolute;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:2px;overflow:visible;}
+    .nav-links a{font-family:'Exo 2',sans-serif;font-weight:500;font-size:0.68rem;color:var(--muted);padding:5px 9px;border-radius:4px;border:1px solid transparent;white-space:nowrap;transition:color 0.15s,border-color 0.15s,background 0.15s;flex-shrink:0;}
+    .nav-links a:hover{color:var(--accent);border-color:var(--border);background:rgba(0,212,255,0.05);}
+    .nav-links a.nav-current{color:var(--accent);border-color:var(--accent);background:rgba(0,212,255,0.06);}
+    .nav-divider{width:1px;height:16px;background:var(--border);margin:0 6px;flex-shrink:0;opacity:0.6;}
+    .nav-item{position:relative;display:flex;align-items:center;}
+    .nav-dropdown{display:none;position:absolute;top:100%;left:0;min-width:130px;padding-top:6px;z-index:100;}
+    .nav-dropdown-inner{background:var(--panel);border:1px solid var(--border);border-radius:4px;overflow:hidden;}
+    .nav-item:hover .nav-dropdown{display:block;}
+    .nav-links .nav-dropdown a{font-family:'Exo 2',sans-serif;font-weight:400;display:block;padding:7px 12px;font-size:0.65rem;color:var(--muted);border:none;border-left:2px solid transparent;border-radius:0;transition:0.15s;}
+    .nav-links .nav-dropdown a:hover,.nav-links .nav-dropdown a.nav-current{color:var(--accent);border-left-color:var(--accent);background:rgba(0,212,255,0.04);}
+    .theme-toggle{margin-left:auto;flex-shrink:0;cursor:pointer;padding-left:1rem;}
+    .toggle-track{width:42px;height:22px;background:var(--border);border-radius:50px;position:relative;transition:background 0.3s;}
+    .toggle-thumb{width:14px;height:14px;background:var(--accent);border-radius:50%;position:absolute;top:4px;left:4px;transition:transform 0.3s;box-shadow:0 0 8px var(--accent);}
+    body.light .toggle-thumb{transform:translateX(20px);}
+    .hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;cursor:pointer;padding:6px;margin-right:8px;flex-shrink:0;}
+    .hamburger span{display:block;width:18px;height:2px;background:var(--muted);border-radius:2px;transition:0.2s;}
+    .nav-drawer{display:none;position:fixed;top:var(--nav-h);left:0;right:0;background:var(--panel);border-bottom:1px solid var(--border);z-index:99;padding:0.75rem 1.25rem 1rem;flex-direction:column;gap:2px;max-height:calc(100vh - var(--nav-h));overflow-y:auto;}
+    .nav-drawer.open{display:flex;}
+    .nav-drawer a{font-family:'Exo 2',sans-serif;font-weight:500;font-size:0.75rem;color:var(--text-dim);padding:8px 10px;border-radius:4px;border-left:2px solid transparent;transition:0.15s;}
+    .nav-drawer a:hover{color:var(--accent);border-left-color:var(--accent);background:rgba(0,212,255,0.04);}
+    .nav-drawer a.nav-current{color:var(--accent);border-left-color:var(--accent);}
+    .drawer-sub{padding-left:1.8rem!important;font-size:0.7rem!important;opacity:0.8;}
+    body.nav-compact .nav-links{display:none;}
+    body.nav-compact .hamburger{display:flex;}
+    #scroll-sentinel{position:absolute;top:0;left:0;width:1px;height:10px;pointer-events:none;}
+
+    /* APP LAYOUT */
+    .app-shell{position:relative;z-index:1;display:grid;grid-template-columns:200px 1fr 230px;min-height:calc(100vh - var(--nav-h));margin-top:var(--nav-h);}
+
+    /* STEP SIDEBAR */
+    .step-sidebar{border-right:1px solid var(--border);background:var(--panel);padding:1.5rem 0;position:sticky;top:var(--nav-h);height:calc(100vh - var(--nav-h));overflow-y:auto;}
+    .sidebar-label{font-family:'Share Tech Mono',monospace;font-size:0.52rem;letter-spacing:0.22em;color:var(--muted);text-transform:uppercase;padding:0 1.2rem;margin-bottom:0.75rem;}
+    .step-item{display:flex;align-items:center;gap:10px;padding:9px 1.2rem;cursor:pointer;border-left:2px solid transparent;transition:0.15s;position:relative;}
+    .step-item:hover{background:var(--primary-dim);border-left-color:var(--muted-dim);}
+    .step-item.active{background:var(--primary-dim);border-left-color:var(--accent);}
+    .step-item.done{border-left-color:rgba(0,212,255,0.3);}
+    .step-num{font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--muted-dim);width:18px;flex-shrink:0;letter-spacing:0.05em;}
+    .step-item.active .step-num,.step-item.done .step-num{color:var(--accent);}
+    .step-info{flex:1;min-width:0;}
+    .step-name{font-family:'Exo 2',sans-serif;font-weight:600;font-size:0.65rem;letter-spacing:0.12em;color:var(--muted);text-transform:uppercase;}
+    .step-item.active .step-name{color:var(--text);}
+    .step-item.done .step-name{color:var(--text-dim);}
+    .step-sub{font-family:'Exo 2',sans-serif;font-size:0.58rem;color:var(--muted-dim);margin-top:1px;}
+    .step-status{flex-shrink:0;width:14px;text-align:center;}
+    .status-dot{width:6px;height:6px;border-radius:50%;background:var(--border);margin:0 auto;}
+    .step-item.active .status-dot{background:var(--accent);box-shadow:0 0 6px var(--accent);}
+    .step-item.done .status-dot{display:none;}
+    .status-check{font-size:0.7rem;color:var(--accent);display:none;}
+    .step-item.done .status-check{display:block;}
+    .step-item.done .status-dot{display:none;}
+    .sidebar-divider{height:1px;background:var(--border);margin:0.75rem 1.2rem;}
+    .sidebar-actions{padding:0.75rem 1.2rem;display:flex;flex-direction:column;gap:6px;}
+    .btn-reset{font-family:'Share Tech Mono',monospace;font-size:0.56rem;letter-spacing:0.12em;color:var(--muted);background:transparent;border:1px solid var(--border);border-radius:3px;padding:5px 10px;cursor:pointer;text-align:left;transition:0.15s;}
+    .btn-reset:hover{color:var(--warn);border-color:var(--warn);background:var(--warn-dim);}
+
+    /* STEP MAIN */
+    .step-main{padding:2rem 2rem 4rem;max-width:720px;}
+    .step-header{margin-bottom:2rem;}
+    .step-header-top{display:flex;align-items:center;gap:12px;margin-bottom:0.5rem;}
+    .step-tag{font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:0.22em;color:var(--accent);opacity:0.75;}
+    .step-title{font-family:'Exo 2',sans-serif;font-weight:700;font-size:1.5rem;letter-spacing:0.06em;color:var(--text);}
+    .step-title span{color:var(--accent);}
+    .step-desc{font-family:'Exo 2',sans-serif;font-weight:300;font-size:0.72rem;color:var(--text-dim);line-height:1.9;max-width:560px;}
+
+    /* FIELDS */
+    .fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.5rem;}
+    .field-full{grid-column:1/-1;}
+    .field-group{display:flex;flex-direction:column;gap:5px;}
+    .field-label{font-family:'Share Tech Mono',monospace;font-size:0.52rem;letter-spacing:0.18em;color:var(--muted);text-transform:uppercase;}
+    .field-input,.field-select,.field-textarea{font-family:'Share Tech Mono',monospace;font-size:0.68rem;background:var(--panel-alt);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:7px 10px;outline:none;width:100%;transition:border-color 0.15s;letter-spacing:0.03em;}
+    .field-input:focus,.field-select:focus,.field-textarea:focus{border-color:var(--accent);}
+    .field-input::placeholder,.field-textarea::placeholder{color:var(--muted-dim);}
+    .field-textarea{resize:vertical;min-height:80px;line-height:1.5;}
+    .field-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;}
+    .field-radio-group{display:flex;gap:8px;flex-wrap:wrap;margin-top:2px;}
+    .radio-option{display:flex;align-items:center;gap:5px;cursor:pointer;}
+    .radio-option input{accent-color:var(--accent);cursor:pointer;}
+    .radio-option span{font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--text-dim);}
+
+    /* SECTION LABEL */
+    .section-label{font-family:'Share Tech Mono',monospace;font-size:0.56rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--accent);margin-bottom:1rem;display:flex;align-items:center;gap:8px;}
+    .section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+    /* CHECKLIST */
+    .checklist{display:flex;flex-direction:column;gap:6px;margin-bottom:1.5rem;}
+    .check-item{display:flex;align-items:center;gap:10px;padding:7px 10px;border:1px solid var(--border);border-radius:4px;cursor:pointer;transition:0.15s;}
+    .check-item:hover{border-color:var(--muted-dim);background:var(--primary-dim);}
+    .check-item.checked{border-color:rgba(0,212,255,0.3);background:rgba(0,212,255,0.04);}
+    .check-item input[type=checkbox]{accent-color:var(--accent);cursor:pointer;flex-shrink:0;width:14px;height:14px;}
+    .check-text{font-family:'Exo 2',sans-serif;font-size:0.68rem;color:var(--text-dim);flex:1;}
+    .check-item.checked .check-text{color:var(--muted);}
+
+    /* ESCALATION */
+    .escalation-box{background:var(--warn-dim);border:1px solid rgba(245,158,11,0.3);border-radius:4px;padding:10px 14px;margin-bottom:1.5rem;display:flex;gap:10px;align-items:flex-start;}
+    .escalation-icon{font-size:0.8rem;flex-shrink:0;margin-top:1px;}
+    .escalation-text{font-family:'Exo 2',sans-serif;font-size:0.68rem;color:var(--warn);line-height:1.6;}
+
+    /* TOOLS */
+    .tools-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.5rem;}
+    .tool-btn{font-family:'Share Tech Mono',monospace;font-size:0.56rem;letter-spacing:0.1em;color:var(--accent2);background:transparent;border:1px solid var(--border);border-radius:3px;padding:5px 12px;cursor:pointer;transition:0.15s;text-decoration:none;display:inline-flex;align-items:center;gap:5px;}
+    .tool-btn:hover{border-color:var(--accent2);background:rgba(88,166,255,0.06);color:var(--text);}
+
+    /* STEP NAV */
+    .step-nav{display:flex;gap:10px;padding-top:1.5rem;border-top:1px solid var(--border);margin-top:1rem;}
+    .btn-prev,.btn-next{font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:0.12em;padding:7px 18px;border-radius:3px;cursor:pointer;transition:0.15s;border:1px solid var(--border);background:transparent;color:var(--muted);}
+    .btn-prev:hover{color:var(--text);border-color:var(--muted);}
+    .btn-next{background:rgba(0,212,255,0.07);color:var(--accent);border-color:rgba(0,212,255,0.3);}
+    .btn-next:hover{background:rgba(0,212,255,0.14);}
+    .btn-prev:disabled,.btn-next:disabled{opacity:0.3;cursor:default;}
+
+    /* IOC RAIL */
+    .ioc-rail{border-left:1px solid var(--border);background:var(--panel);padding:1.5rem 0;position:sticky;top:var(--nav-h);height:calc(100vh - var(--nav-h));overflow-y:auto;display:flex;flex-direction:column;}
+    .ioc-header{padding:0 1rem;margin-bottom:1rem;}
+    .ioc-title{font-family:'Share Tech Mono',monospace;font-size:0.56rem;letter-spacing:0.22em;color:var(--accent);text-transform:uppercase;margin-bottom:6px;}
+    .ioc-count-bar{font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--muted);letter-spacing:0.06em;}
+    .ioc-count-bar span{color:var(--accent);}
+    .ioc-sections{flex:1;overflow-y:auto;padding:0 1rem;}
+    .ioc-section{margin-bottom:1rem;}
+    .ioc-section-label{font-family:'Share Tech Mono',monospace;font-size:0.5rem;letter-spacing:0.18em;color:var(--muted);text-transform:uppercase;margin-bottom:5px;display:flex;align-items:center;gap:6px;}
+    .ioc-section-label::after{content:'';flex:1;height:1px;background:var(--border-dim);}
+    .ioc-list{display:flex;flex-direction:column;gap:3px;}
+    .ioc-entry{font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--text-dim);background:var(--panel-alt);border:1px solid var(--border-dim);border-radius:3px;padding:3px 7px;word-break:break-all;line-height:1.4;}
+    .ioc-empty{font-family:'Share Tech Mono',monospace;font-size:0.56rem;color:var(--muted-dim);font-style:italic;}
+    .ioc-actions{padding:1rem;display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--border);margin-top:auto;}
+    .btn-copy-iocs,.btn-export{font-family:'Share Tech Mono',monospace;font-size:0.56rem;letter-spacing:0.1em;padding:7px 10px;border-radius:3px;cursor:pointer;transition:0.15s;text-align:center;width:100%;}
+    .btn-copy-iocs{background:rgba(0,212,255,0.07);color:var(--accent);border:1px solid rgba(0,212,255,0.25);}
+    .btn-copy-iocs:hover{background:rgba(0,212,255,0.14);}
+    .btn-export{background:transparent;color:var(--muted);border:1px solid var(--border);}
+    .btn-export:hover{color:var(--text);border-color:var(--muted);}
+
+    /* MOBILE IOC PANEL */
+    .ioc-mobile-bar{display:none;position:fixed;bottom:0;left:0;right:0;z-index:50;background:var(--panel);border-top:1px solid var(--border);padding:10px 1rem;align-items:center;gap:10px;}
+    .ioc-mobile-count{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--muted);flex:1;}
+    .ioc-mobile-count span{color:var(--accent);}
+    .btn-ioc-mobile{font-family:'Share Tech Mono',monospace;font-size:0.56rem;letter-spacing:0.1em;color:var(--accent);background:rgba(0,212,255,0.07);border:1px solid rgba(0,212,255,0.25);border-radius:3px;padding:5px 12px;cursor:pointer;}
+    .ioc-modal-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);}
+    .ioc-modal-overlay.open{display:block;}
+    .ioc-modal{position:absolute;bottom:0;left:0;right:0;background:var(--panel);border-top:1px solid var(--border);max-height:70vh;display:flex;flex-direction:column;border-radius:8px 8px 0 0;padding-top:1rem;}
+    .ioc-modal-close{font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--muted);background:transparent;border:none;cursor:pointer;padding:0 1rem 0.75rem;text-align:left;}
+
+    /* PROGRESS BAR */
+    .progress-strip{background:var(--border);height:2px;position:fixed;top:var(--nav-h);left:0;z-index:99;}
+    .progress-fill{height:100%;background:var(--accent);transition:width 0.3s;}
+
+    /* FOOTER */
+    .po-footer{border-top:1px solid var(--border);padding:1rem 2rem;font-family:'Share Tech Mono',monospace;font-size:0.56rem;color:var(--muted);letter-spacing:0.08em;}
+
+    /* RESPONSIVE */
+    @media(max-width:1100px){
+      .app-shell{grid-template-columns:180px 1fr;}
+      .ioc-rail{display:none;}
+      .ioc-mobile-bar{display:flex;}
+      .step-main{padding-bottom:5rem;}
+    }
+    @media(max-width:768px){
+      .app-shell{grid-template-columns:1fr;}
+      .step-sidebar{display:none;}
+      .step-main{padding:1.25rem 1rem 5rem;}
+      .fields-grid{grid-template-columns:1fr;}
+      .field-full{grid-column:1;}
+    }
+    @media(max-width:640px){
+      .nav-links{display:none;}
+      .hamburger{display:flex;}
+    }
+  </style>
+</head>
+<body class="dark">
+  <div id="scroll-sentinel" aria-hidden="true"></div>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="hamburger" id="hamburger" onclick="toggleDrawer()">
+      <span></span><span></span><span></span>
+    </div>
+    <a class="nav-brand" href="https://h3ad-sec.github.io" target="_blank" rel="noopener">
+      <img id="navLogo" src="https://raw.githubusercontent.com/h3ad-sec/h3ad-sec.github.io/main/logo-dark.png" alt="H3AD-SEC" />
+    </a>
+    <a class="xv-nav-pill" id="xv-nav-pill" href="https://h3ad-sec.github.io/PHISHOPS/" style="text-decoration:none">
+      <span class="xv-pill-name"><span class="xv-pill-accent">PHISH</span><span class="xv-pill-text">OPS</span></span>
+      <span class="xv-pill-tagline">Phishing Investigation Tracker.</span>
+    </a>
+    <div class="nav-links">
+      <div class="nav-divider"></div>
+      <a href="https://h3ad-sec.github.io" target="_blank" rel="noopener">HOME</a>
+      <a href="https://h3ad-sec.github.io/H3AD/" target="_blank" rel="noopener">H3AD</a>
+      <div class="nav-divider"></div>
+      <div class="nav-item">
+        <a href="https://h3ad-sec.github.io/H3AD-X/" target="_blank" rel="noopener">H3AD-X</a>
+        <div class="nav-dropdown"><div class="nav-dropdown-inner">
+          <a href="https://h3ad-sec.github.io/X-VERDIKT/" target="_blank" rel="noopener">X-VERDIKT</a>
+          <a href="https://h3ad-sec.github.io/PARSE-X/" target="_blank" rel="noopener">PARSE-X</a>
+          <a href="https://h3ad-sec.github.io/DNSCOPE/" target="_blank" rel="noopener">DNSCOPE</a>
+        </div></div>
+      </div>
+      <div class="nav-item">
+        <a href="https://h3ad-sec.github.io/H3AD-AI/" target="_blank" rel="noopener">H3AD-AI</a>
+        <div class="nav-dropdown"><div class="nav-dropdown-inner">
+          <a href="https://h3ad-sec.github.io/INSIGHT-AI/" target="_blank" rel="noopener">INSIGHT-AI</a>
+          <a href="https://h3ad-sec.github.io/QUERYCRAFT-AI/" target="_blank" rel="noopener">QUERYCRAFT-AI</a>
+          <a href="https://h3ad-sec.github.io/FPLENS-AI/" target="_blank" rel="noopener">FPLENS-AI</a>
+          <a href="https://h3ad-sec.github.io/ATTMAP-AI/" target="_blank" rel="noopener">ATTMAP-AI</a>
+          <a href="https://h3ad-sec.github.io/CHRONO-AI/" target="_blank" rel="noopener">CHRONO-AI</a>
+        </div></div>
+      </div>
+      <div class="nav-item">
+        <a href="https://h3ad-sec.github.io/H3AD-DETECT/" target="_blank" rel="noopener">H3AD-DETECT</a>
+        <div class="nav-dropdown"><div class="nav-dropdown-inner">
+          <a href="https://h3ad-sec.github.io/TRACERULES/" target="_blank" rel="noopener">TRACERULES</a>
+        </div></div>
+      </div>
+      <div class="nav-item">
+        <a href="https://h3ad-sec.github.io/H3AD-HUNT/" target="_blank" rel="noopener">H3AD-HUNT</a>
+        <div class="nav-dropdown"><div class="nav-dropdown-inner">
+          <a href="https://h3ad-sec.github.io/HYPOS/" target="_blank" rel="noopener">HYPOS</a>
+          <a href="https://h3ad-sec.github.io/PIVEX/" target="_blank" rel="noopener">PIVEX</a>
+          <a href="https://h3ad-sec.github.io/TRACEPULSE/" target="_blank" rel="noopener">TRACEPULSE</a>
+        </div></div>
+      </div>
+      <div class="nav-item">
+        <a href="https://h3ad-sec.github.io/H3AD-OPS/" target="_blank" rel="noopener">H3AD-OPS</a>
+        <div class="nav-dropdown"><div class="nav-dropdown-inner">
+          <a href="https://h3ad-sec.github.io/QUICKTRACE/" target="_blank" rel="noopener">QUICKTRACE</a>
+          <a href="https://h3ad-sec.github.io/PHISHOPS/" class="nav-current">PHISHOPS</a>
+        </div></div>
+      </div>
+      <a href="https://h3ad-sec.github.io/H3AD-DF/" target="_blank" rel="noopener">H3AD-DF</a>
+      <a href="https://h3ad-sec.github.io/H3AD-IR/" target="_blank" rel="noopener">H3AD-IR</a>
+      <div class="nav-divider"></div>
+      <a href="mailto:h3adsec@gmail.com">CONTACT</a>
+    </div>
+    <div class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+      <div class="toggle-track"><div class="toggle-thumb"></div></div>
+    </div>
+  </nav>
+
+  <!-- MOBILE DRAWER -->
+  <div class="nav-drawer" id="navDrawer">
+    <a href="https://h3ad-sec.github.io" target="_blank" rel="noopener" onclick="closeDrawer()">HOME ↗</a>
+    <a href="https://h3ad-sec.github.io/H3AD/" target="_blank" rel="noopener" onclick="closeDrawer()">H3AD ↗</a>
+    <a href="https://h3ad-sec.github.io/H3AD-X/" target="_blank" rel="noopener" onclick="closeDrawer()">H3AD-X ↗</a>
+    <a href="https://h3ad-sec.github.io/X-VERDIKT/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ X-VERDIKT ↗</a>
+    <a href="https://h3ad-sec.github.io/PARSE-X/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ PARSE-X ↗</a>
+    <a href="https://h3ad-sec.github.io/DNSCOPE/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ DNSCOPE ↗</a>
+    <a href="https://h3ad-sec.github.io/H3AD-AI/" target="_blank" rel="noopener" onclick="closeDrawer()">H3AD-AI ↗</a>
+    <a href="https://h3ad-sec.github.io/INSIGHT-AI/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ INSIGHT-AI ↗</a>
+    <a href="https://h3ad-sec.github.io/QUERYCRAFT-AI/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ QUERYCRAFT-AI ↗</a>
+    <a href="https://h3ad-sec.github.io/FPLENS-AI/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ FPLENS-AI ↗</a>
+    <a href="https://h3ad-sec.github.io/ATTMAP-AI/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ ATTMAP-AI ↗</a>
+    <a href="https://h3ad-sec.github.io/CHRONO-AI/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ CHRONO-AI ↗</a>
+    <a href="https://h3ad-sec.github.io/H3AD-DETECT/" target="_blank" rel="noopener" onclick="closeDrawer()">H3AD-DETECT ↗</a>
+    <a href="https://h3ad-sec.github.io/TRACERULES/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ TRACERULES ↗</a>
+    <a href="https://h3ad-sec.github.io/H3AD-HUNT/" target="_blank" rel="noopener" onclick="closeDrawer()">H3AD-HUNT ↗</a>
+    <a href="https://h3ad-sec.github.io/HYPOS/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ HYPOS ↗</a>
+    <a href="https://h3ad-sec.github.io/PIVEX/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ PIVEX ↗</a>
+    <a href="https://h3ad-sec.github.io/TRACEPULSE/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ TRACEPULSE ↗</a>
+    <a href="https://h3ad-sec.github.io/H3AD-OPS/" target="_blank" rel="noopener" onclick="closeDrawer()">H3AD-OPS ↗</a>
+    <a href="https://h3ad-sec.github.io/QUICKTRACE/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ QUICKTRACE ↗</a>
+    <a href="https://h3ad-sec.github.io/PHISHOPS/" onclick="closeDrawer()" class="drawer-sub nav-current">↳ PHISHOPS</a>
+    <a href="https://h3ad-sec.github.io/H3AD-DF/" target="_blank" rel="noopener" onclick="closeDrawer()">H3AD-DF ↗</a>
+    <a href="https://h3ad-sec.github.io/H3AD-IR/" target="_blank" rel="noopener" onclick="closeDrawer()">H3AD-IR ↗</a>
+    <a href="mailto:h3adsec@gmail.com" onclick="closeDrawer()">CONTACT</a>
+  </div>
+
+  <!-- PROGRESS BAR -->
+  <div class="progress-strip" id="progressStrip" style="width:100%">
+    <div class="progress-fill" id="progressFill" style="width:14.3%"></div>
+  </div>
+
+  <!-- APP -->
+  <div class="app-shell">
+    <!-- Step Sidebar -->
+    <aside class="step-sidebar" id="stepSidebar">
+      <div class="sidebar-label">INVESTIGATION</div>
+      <div id="sidebarSteps"></div>
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-actions">
+        <button class="btn-reset" onclick="confirmReset()">CLEAR SESSION</button>
+      </div>
+    </aside>
+
+    <!-- Step Main -->
+    <main class="step-main" id="stepMain"></main>
+
+    <!-- IOC Rail -->
+    <aside class="ioc-rail" id="iocRail">
+      <div class="ioc-header">
+        <div class="ioc-title">IOC AGGREGATOR</div>
+        <div class="ioc-count-bar">Total: <span id="iocTotalCount">0</span> indicators</div>
+      </div>
+      <div class="ioc-sections" id="iocSections"></div>
+      <div class="ioc-actions">
+        <button class="btn-copy-iocs" onclick="copyIOCs()">COPY ALL IOCs</button>
+        <button class="btn-export" onclick="exportSummary()">EXPORT SUMMARY</button>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Mobile IOC bar -->
+  <div class="ioc-mobile-bar" id="iocMobileBar">
+    <div class="ioc-mobile-count">IOCs collected: <span id="iocMobileCount">0</span></div>
+    <button class="btn-ioc-mobile" onclick="openIOCModal()">VIEW IOCs</button>
+    <button class="btn-ioc-mobile" onclick="exportSummary()" style="border-color:var(--border);color:var(--muted);background:transparent;">EXPORT</button>
+  </div>
+
+  <!-- IOC Modal (mobile) -->
+  <div class="ioc-modal-overlay" id="iocModalOverlay" onclick="closeIOCModal(event)">
+    <div class="ioc-modal">
+      <button class="ioc-modal-close" onclick="closeIOCModal()">CLOSE ×</button>
+      <div style="padding:0 1rem;margin-bottom:0.5rem;">
+        <div class="ioc-title">IOC AGGREGATOR</div>
+      </div>
+      <div class="ioc-sections" id="iocSectionsMobile" style="flex:1;overflow-y:auto;padding:0 1rem;"></div>
+      <div class="ioc-actions">
+        <button class="btn-copy-iocs" onclick="copyIOCs()">COPY ALL IOCs</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="po-footer">H3AD-SEC &middot; PHISHOPS &middot; PHISHING INVESTIGATION TRACKER</footer>
+
+  <script>
+    // ── STEPS DATA ──────────────────────────────────────────────────────────────
+    var STEPS = [
+      {
+        id: 'triage', num: '01', name: 'TRIAGE', subtitle: 'Initial Context',
+        desc: 'Establish the alert source, grab the raw email, and document key envelope fields before analysis begins.',
+        fields: [
+          { id: 'alertSource', label: 'ALERT SOURCE', type: 'select', opts: ['', 'User Report', 'SIEM Rule', 'Email Gateway', 'SOAR Ticket'], half: true },
+          { id: 'origin', label: 'ORIGIN', type: 'select', opts: ['', 'External', 'Internal', 'Unknown'], half: true },
+          { id: 'sender', label: 'SENDER ADDRESS', type: 'text', ph: 'attacker@phish-domain.com', ioc: 'senders', half: true },
+          { id: 'replyTo', label: 'REPLY-TO', type: 'text', ph: 'reply@other-domain.com', half: true },
+          { id: 'returnPath', label: 'RETURN-PATH', type: 'text', ph: 'bounce@domain.com', ioc: 'senders', half: true },
+          { id: 'recipients', label: 'RECIPIENT(S)', type: 'text', ph: 'user@company.com', half: true },
+          { id: 'subject', label: 'SUBJECT', type: 'text', ph: 'Email subject line' },
+          { id: 'timestamp', label: 'TIMESTAMP', type: 'datetime-local', half: true },
+          { id: 'triageNotes', label: 'NOTES', type: 'textarea', ph: 'Initial observations, mismatch flags, any context from the reporter...' },
+        ],
+        checks: [
+          'Raw email (EML/MSG) obtained',
+          'Sender / Reply-To / Return-Path mismatch noted',
+          'Internal vs external origin confirmed',
+          'Recipients identified and logged',
+        ],
+        tools: [],
+        escalation: null,
+      },
+      {
+        id: 'headers', num: '02', name: 'HEADERS', subtitle: 'Header Analysis',
+        desc: 'Trace the relay chain, verify authentication results, and flag any spoofing or routing anomalies.',
+        fields: [
+          { id: 'spf', label: 'SPF RESULT', type: 'select', opts: ['', 'Pass', 'Fail', 'Softfail', 'None / Missing'], half: true },
+          { id: 'dkim', label: 'DKIM RESULT', type: 'select', opts: ['', 'Pass', 'Fail', 'None / Missing'], half: true },
+          { id: 'dmarc', label: 'DMARC RESULT', type: 'select', opts: ['', 'Pass', 'Fail', 'None / Missing'], half: true },
+          { id: 'xOriginatingIp', label: 'X-ORIGINATING-IP', type: 'text', ph: '203.0.113.42', ioc: 'ips', half: true },
+          { id: 'relayAnomalies', label: 'RELAY ANOMALIES', type: 'textarea', ph: 'Unexpected hops, foreign country IPs, suspicious mail servers...' },
+          { id: 'headerNotes', label: 'NOTES', type: 'textarea', ph: 'Message-ID anomalies, domain mismatches, other observations...' },
+        ],
+        checks: [
+          'Received chain traced hop-by-hop',
+          'SPF / DKIM / DMARC result captured',
+          'X-Originating-IP cross-checked against threat intel',
+          'Message-ID format reviewed for anomalies',
+          'Unexpected relay IPs or countries flagged',
+        ],
+        tools: [
+          { label: 'MXToolbox Headers', url: 'https://mxtoolbox.com/EmailHeaders.aspx' },
+          { label: 'Google Admin Toolbox', url: 'https://toolbox.googleapps.com/apps/messageheader/' },
+        ],
+        escalation: 'SPF/DKIM/DMARC fail combined with a lookalike sender domain: escalate immediately.',
+      },
+      {
+        id: 'urls', num: '03', name: 'URL TRIAGE', subtitle: 'Domain and URL Analysis',
+        desc: 'Extract, defang, and triage all URLs. Check redirect chains, domain age, and reputation without visiting directly.',
+        fields: [
+          { id: 'urlList', label: 'EXTRACTED URLS (defanged, one per line)', type: 'textarea', ph: 'hxxps://login.phish-example[.]com/verify\nhxxps://cdn.attacker[.]net/payload', ioc: 'urls', rows: 5 },
+          { id: 'domainAge', label: 'DOMAIN AGE (days, 0 = unknown)', type: 'number', ph: '0', half: true },
+          { id: 'urlFindings', label: 'FINDINGS', type: 'textarea', ph: 'Redirect chain, landing page type, infrastructure notes, registrar info...' },
+        ],
+        checks: [
+          'All URLs extracted (including encoded / obfuscated)',
+          'URLs defanged before sharing',
+          'Redirect chains checked via URLScan (no direct visit)',
+          'Domain age checked via WHOIS',
+          'Typosquatting / lookalike compared to legit sender domain',
+          'URL destination type noted: login page / file download / redirect',
+        ],
+        tools: [
+          { label: 'URLScan.io', url: 'https://urlscan.io' },
+          { label: 'VirusTotal', url: 'https://www.virustotal.com' },
+          { label: 'URLhaus', url: 'https://urlhaus.abuse.ch' },
+          { label: 'WHOIS Lookup', url: 'https://whois.domaintools.com' },
+          { label: 'Shodan', url: 'https://www.shodan.io' },
+          { label: 'Censys', url: 'https://search.censys.io' },
+        ],
+        escalation: 'Newly registered domain (under 30 days) combined with a credential harvesting page: high-confidence phish.',
+      },
+      {
+        id: 'attachment', num: '04', name: 'ATTACHMENT', subtitle: 'Sandbox Analysis',
+        desc: 'Check file hashes, detonate in an isolated sandbox, and extract all IOCs before any other action.',
+        fields: [
+          { id: 'hasAttachment', label: 'ATTACHMENT PRESENT', type: 'select', opts: ['', 'Yes', 'No'], half: true },
+          { id: 'fileType', label: 'FILE TYPE', type: 'select', opts: ['', 'Office Doc (macro risk)', 'PDF (script/JS risk)', 'ZIP / ISO (container)', 'EXE / Binary', 'Script (JS/VBS/PS1)', 'Other'], half: true },
+          { id: 'fileHash', label: 'SHA256 / MD5 HASH', type: 'text', ph: 'e3b0c44298fc1c149afbf4c8996fb924...', ioc: 'hashes' },
+          { id: 'sandboxVerdict', label: 'SANDBOX VERDICT', type: 'select', opts: ['', 'Clean', 'Malicious', 'Inconclusive', 'Not Detonated'], half: true },
+          { id: 'c2Indicators', label: 'C2 INDICATORS (IPs / domains, one per line)', type: 'textarea', ph: '185.220.101.45\nc2.attacker-domain[.]com', ioc: 'c2', rows: 4 },
+          { id: 'sandboxFindings', label: 'PROCESS / NETWORK FINDINGS', type: 'textarea', ph: 'Process creation, registry changes, dropped files, network callbacks...' },
+        ],
+        checks: [
+          'File hash checked on VirusTotal before detonation',
+          'File type and macro / script risk assessed',
+          'Detonated in isolated sandbox',
+          'Process creation events reviewed',
+          'Network callbacks and C2 IPs extracted',
+          'Dropped files and registry changes noted',
+          'All IOCs documented',
+        ],
+        tools: [
+          { label: 'Any.run', url: 'https://any.run' },
+          { label: 'Hybrid Analysis', url: 'https://www.hybrid-analysis.com' },
+          { label: 'Joe Sandbox', url: 'https://www.joesandbox.com' },
+          { label: 'VirusTotal', url: 'https://www.virustotal.com' },
+        ],
+        escalation: 'Never open attachments on production endpoints. Isolated sandbox only.',
+      },
+      {
+        id: 'identity', num: '05', name: 'IDENTITY', subtitle: 'Okta Impact Assessment',
+        desc: 'Determine if the target user interacted with the phish, check for auth anomalies, and assess credential or session compromise.',
+        fields: [
+          { id: 'affectedUser', label: 'AFFECTED USER', type: 'text', ph: 'user@company.com', ioc: 'users', half: true },
+          { id: 'clickConfirmed', label: 'LINK / ATTACHMENT OPENED', type: 'select', opts: ['', 'Confirmed', 'Not Confirmed', 'Unknown'], half: true },
+          { id: 'oktaFindings', label: 'OKTA AUTH FINDINGS (±2hr window)', type: 'textarea', ph: 'New device, impossible travel, unfamiliar IP, MFA bypass attempts, policy failures...' },
+          { id: 'sessionAnomalies', label: 'SESSION ANOMALY DETAILS', type: 'textarea', ph: 'New sessions from different geo/ASN post-auth, token theft indicators...' },
+          { id: 'identityNotes', label: 'NOTES', type: 'textarea', ph: 'Credential submission evidence, proxy log findings...' },
+        ],
+        checks: [
+          'Email gateway logs checked for link click / attachment open',
+          'Endpoint telemetry reviewed for affected user',
+          'Okta logs pulled for the ±2 hour window around email receipt',
+          'New device / impossible travel events reviewed',
+          'MFA bypass or downgrade attempts checked',
+          'New app assignments or policy failures reviewed',
+          'Session token theft indicators checked (new geo/ASN post-auth)',
+          'Proxy logs checked for credential submission',
+        ],
+        tools: [],
+        escalation: 'MFA bypassed or downgraded: immediate account lock. Session anomaly after click: revoke all sessions, force re-auth. Credential submission confirmed: treat as full compromise.',
+      },
+      {
+        id: 'containment', num: '06', name: 'CONTAINMENT', subtitle: 'Blocking and Revocation',
+        desc: 'Execute blocking, revocation, and evidence preservation. All actions require analyst approval before proceeding.',
+        fields: [
+          { id: 'containmentNotes', label: 'CONTAINMENT NOTES', type: 'textarea', ph: 'Blocklist ticket IDs, exceptions, coordination notes, IR loop-in status...' },
+        ],
+        checks: [
+          'Sender domain / IP blocked at email gateway',
+          'Delivered emails recalled / retracted',
+          'Malicious URLs / domains blocked at proxy and DNS',
+          'File hash blocked at endpoint (CrowdStrike or equivalent)',
+          'Okta user session suspended (if compromise suspected)',
+          'OAuth tokens and active sessions revoked',
+          'Password reset and MFA re-enrollment initiated',
+          'Raw EML exported and preserved as evidence',
+          'Sandbox report exported and preserved',
+          'Header analysis exported and preserved',
+          'Okta log export completed',
+          'Phishing page screenshot taken via URLScan',
+          'All IOCs documented before blocking',
+        ],
+        tools: [],
+        escalation: null,
+      },
+      {
+        id: 'closure', num: '07', name: 'CLOSURE', subtitle: 'SOAR and Ticket Wrap-Up',
+        desc: 'Document root cause, confirm all actions are done, and close the ticket with a complete disposition.',
+        fields: [
+          { id: 'triggerType', label: 'TRIGGER TYPE', type: 'select', opts: ['', 'Proofpoint TAP Alert', 'User-Reported Phishing', 'SIEM Rule: Auth Fail + Email Receipt'], half: true },
+          { id: 'disposition', label: 'DISPOSITION', type: 'select', opts: ['', 'True Positive', 'False Positive', 'Benign / Spam'], half: true },
+          { id: 'rootCause', label: 'ROOT CAUSE', type: 'text', ph: 'e.g. Spoofed vendor invoice with credential harvesting link' },
+          { id: 'attackVector', label: 'ATTACK VECTOR', type: 'text', ph: 'e.g. Phishing link via lookalike domain, no attachment', half: true },
+          { id: 'affectedCount', label: 'AFFECTED USERS COUNT', type: 'number', ph: '0', half: true },
+          { id: 'closureNotes', label: 'NOTES', type: 'textarea', ph: 'Lessons learned, follow-up actions, IR escalation decision...' },
+        ],
+        checks: [
+          'All IOCs blocked',
+          'Impacted users notified and remediated',
+          'Ticket root cause documented',
+          'Attack vector documented',
+          'Disposition set',
+          'Affected user count logged',
+          'IOCs documented in structured format for downstream TI',
+          'IR team notified (if escalated)',
+        ],
+        tools: [],
+        escalation: null,
+      },
+    ];
+
+    // ── STATE ───────────────────────────────────────────────────────────────────
+    var STORAGE_KEY = 'phishops_v1';
+    var state = loadState();
+    var currentStep = state.currentStep || 0;
+
+    function loadState() {
+      try {
+        var s = localStorage.getItem(STORAGE_KEY);
+        return s ? JSON.parse(s) : { currentStep: 0, data: {}, checks: {} };
+      } catch(e) { return { currentStep: 0, data: {}, checks: {} }; }
+    }
+
+    function saveState() {
+      state.currentStep = currentStep;
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+    }
+
+    function getStepData(stepId) {
+      if (!state.data[stepId]) state.data[stepId] = {};
+      return state.data[stepId];
+    }
+
+    function getStepChecks(stepId) {
+      if (!state.checks[stepId]) state.checks[stepId] = {};
+      return state.checks[stepId];
+    }
+
+    function isStepComplete(stepId) {
+      var step = STEPS.find(function(s) { return s.id === stepId; });
+      if (!step || !step.checks.length) return false;
+      var checks = getStepChecks(stepId);
+      return step.checks.every(function(_, i) { return !!checks[i]; });
+    }
+
+    // ── SIDEBAR ─────────────────────────────────────────────────────────────────
+    function renderSidebar() {
+      var html = '';
+      STEPS.forEach(function(step, idx) {
+        var active = idx === currentStep ? ' active' : '';
+        var done = isStepComplete(step.id) ? ' done' : '';
+        html += '<div class="step-item' + active + done + '" onclick="goToStep(' + idx + ')" id="sidebar-' + idx + '">'
+          + '<div class="step-num">' + step.num + '</div>'
+          + '<div class="step-info">'
+          + '<div class="step-name">' + step.name + '</div>'
+          + '<div class="step-sub">' + step.subtitle + '</div>'
+          + '</div>'
+          + '<div class="step-status"><div class="status-dot"></div><span class="status-check">&#10003;</span></div>'
+          + '</div>';
+      });
+      document.getElementById('sidebarSteps').innerHTML = html;
+    }
+
+    function updateSidebarItem(idx) {
+      var el = document.getElementById('sidebar-' + idx);
+      if (!el) return;
+      var step = STEPS[idx];
+      el.className = 'step-item' + (idx === currentStep ? ' active' : '') + (isStepComplete(step.id) ? ' done' : '');
+    }
+
+    // ── STEP CONTENT ────────────────────────────────────────────────────────────
+    function goToStep(idx) {
+      currentStep = idx;
+      saveState();
+      renderSidebar();
+      renderStepContent(idx);
+      updateProgress();
+      window.scrollTo(0, 0);
+    }
+
+    function renderStepContent(idx) {
+      var step = STEPS[idx];
+      var data = getStepData(step.id);
+      var checks = getStepChecks(step.id);
+
+      var html = '<div class="step-header">'
+        + '<div class="step-header-top">'
+        + '<span class="step-tag">H3AD-SEC · PHISHOPS · STEP ' + step.num + '</span>'
+        + '</div>'
+        + '<div class="step-title">' + step.name.replace(/(\w+)(\s.*)/, '<span>$1</span>$2').replace(/^(\w+)$/, '<span>$1</span>') + '</div>'
+        + '<div class="step-desc">' + step.desc + '</div>'
+        + '</div>';
+
+      // Fields
+      if (step.fields.length) {
+        html += '<div class="section-label">FIELDS</div>';
+        html += '<div class="fields-grid">';
+        step.fields.forEach(function(f) {
+          var cls = f.half ? 'field-group' : 'field-group field-full';
+          html += '<div class="' + cls + '">';
+          html += '<label class="field-label">' + f.label + '</label>';
+          var val = data[f.id] !== undefined ? data[f.id] : '';
+          var esc = String(val).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+          if (f.type === 'select') {
+            html += '<select class="field-select" onchange="onField(\'' + step.id + '\',\'' + f.id + '\',this.value)">';
+            f.opts.forEach(function(o) {
+              html += '<option value="' + o + '"' + (val === o ? ' selected' : '') + '>' + (o || '-- select --') + '</option>';
+            });
+            html += '</select>';
+          } else if (f.type === 'textarea') {
+            html += '<textarea class="field-textarea" rows="' + (f.rows || 3) + '" placeholder="' + (f.ph || '') + '" oninput="onField(\'' + step.id + '\',\'' + f.id + '\',this.value)">' + esc + '</textarea>';
+          } else if (f.type === 'datetime-local') {
+            html += '<input class="field-input" type="datetime-local" value="' + esc + '" onchange="onField(\'' + step.id + '\',\'' + f.id + '\',this.value)" />';
+          } else if (f.type === 'number') {
+            html += '<input class="field-input" type="number" min="0" placeholder="' + (f.ph || '') + '" value="' + esc + '" oninput="onField(\'' + step.id + '\',\'' + f.id + '\',this.value)" />';
+          } else {
+            html += '<input class="field-input" type="text" placeholder="' + (f.ph || '') + '" value="' + esc + '" oninput="onField(\'' + step.id + '\',\'' + f.id + '\',this.value)" />';
+          }
+          html += '</div>';
+        });
+        html += '</div>';
+      }
+
+      // Escalation
+      if (step.escalation) {
+        html += '<div class="escalation-box"><span class="escalation-icon">&#9888;</span><div class="escalation-text">' + step.escalation + '</div></div>';
+      }
+
+      // Tools
+      if (step.tools && step.tools.length) {
+        html += '<div class="section-label">TOOLS</div>';
+        html += '<div class="tools-row">';
+        step.tools.forEach(function(t) {
+          html += '<a class="tool-btn" href="' + t.url + '" target="_blank" rel="noopener">&#8599; ' + t.label + '</a>';
+        });
+        html += '</div>';
+      }
+
+      // Checklist
+      html += '<div class="section-label">CHECKLIST</div>';
+      html += '<div class="checklist" id="checklist-' + step.id + '">';
+      step.checks.forEach(function(text, i) {
+        var checked = !!checks[i];
+        html += '<label class="check-item' + (checked ? ' checked' : '') + '" id="check-' + step.id + '-' + i + '">'
+          + '<input type="checkbox"' + (checked ? ' checked' : '') + ' onchange="onCheck(\'' + step.id + '\',' + i + ',this.checked)" />'
+          + '<span class="check-text">' + text + '</span>'
+          + '</label>';
+      });
+      html += '</div>';
+
+      // Prev/Next
+      html += '<div class="step-nav">';
+      if (idx > 0) {
+        html += '<button class="btn-prev" onclick="goToStep(' + (idx - 1) + ')">&#8592; PREV</button>';
+      }
+      if (idx < STEPS.length - 1) {
+        html += '<button class="btn-next" onclick="goToStep(' + (idx + 1) + ')" style="margin-left:auto">NEXT &#8594;</button>';
+      } else {
+        html += '<button class="btn-next" onclick="exportSummary()" style="margin-left:auto">EXPORT SUMMARY &#8595;</button>';
+      }
+      html += '</div>';
+
+      document.getElementById('stepMain').innerHTML = html;
+    }
+
+    // ── FIELD / CHECK HANDLERS ──────────────────────────────────────────────────
+    function onField(stepId, fieldId, value) {
+      var data = getStepData(stepId);
+      data[fieldId] = value;
+      saveState();
+      renderIOCRail();
+    }
+
+    function onCheck(stepId, idx, checked) {
+      var checks = getStepChecks(stepId);
+      checks[idx] = checked;
+      saveState();
+      var el = document.getElementById('check-' + stepId + '-' + idx);
+      if (el) el.className = 'check-item' + (checked ? ' checked' : '');
+      updateSidebarItem(STEPS.findIndex(function(s) { return s.id === stepId; }));
+    }
+
+    // ── IOC AGGREGATION ─────────────────────────────────────────────────────────
+    function getIOCs() {
+      var iocs = { senders: [], ips: [], urls: [], hashes: [], c2: [], users: [] };
+
+      var triage = getStepData('triage');
+      if (triage.sender && triage.sender.trim()) iocs.senders.push(triage.sender.trim());
+      if (triage.returnPath && triage.returnPath.trim()) {
+        var rp = triage.returnPath.trim();
+        if (iocs.senders.indexOf(rp) === -1) iocs.senders.push(rp);
+      }
+
+      var headers = getStepData('headers');
+      if (headers.xOriginatingIp && headers.xOriginatingIp.trim()) iocs.ips.push(headers.xOriginatingIp.trim());
+
+      var urls = getStepData('urls');
+      if (urls.urlList && urls.urlList.trim()) {
+        urls.urlList.split('\n').forEach(function(u) {
+          var t = u.trim(); if (t) iocs.urls.push(t);
+        });
+      }
+
+      var att = getStepData('attachment');
+      if (att.fileHash && att.fileHash.trim()) iocs.hashes.push(att.fileHash.trim());
+      if (att.c2Indicators && att.c2Indicators.trim()) {
+        att.c2Indicators.split('\n').forEach(function(c) {
+          var t = c.trim(); if (t) iocs.c2.push(t);
+        });
+      }
+
+      var identity = getStepData('identity');
+      if (identity.affectedUser && identity.affectedUser.trim()) iocs.users.push(identity.affectedUser.trim());
+
+      return iocs;
+    }
+
+    function buildIOCHTML(iocs) {
+      var sections = [
+        { key: 'senders', label: 'SENDER / RETURN-PATH' },
+        { key: 'ips', label: 'IPs' },
+        { key: 'urls', label: 'URLS' },
+        { key: 'hashes', label: 'HASHES' },
+        { key: 'c2', label: 'C2 INDICATORS' },
+        { key: 'users', label: 'AFFECTED USERS' },
+      ];
+      var html = '';
+      sections.forEach(function(s) {
+        var items = iocs[s.key];
+        html += '<div class="ioc-section"><div class="ioc-section-label">' + s.label + '</div><div class="ioc-list">';
+        if (!items || !items.length) {
+          html += '<div class="ioc-empty">none collected</div>';
+        } else {
+          items.forEach(function(item) {
+            html += '<div class="ioc-entry">' + escHtml(item) + '</div>';
+          });
+        }
+        html += '</div></div>';
+      });
+      return html;
+    }
+
+    function renderIOCRail() {
+      var iocs = getIOCs();
+      var total = Object.values(iocs).reduce(function(acc, arr) { return acc + arr.length; }, 0);
+      var el = document.getElementById('iocTotalCount');
+      if (el) el.textContent = total;
+      var mc = document.getElementById('iocMobileCount');
+      if (mc) mc.textContent = total;
+      var html = buildIOCHTML(iocs);
+      var rail = document.getElementById('iocSections');
+      if (rail) rail.innerHTML = html;
+      var mob = document.getElementById('iocSectionsMobile');
+      if (mob) mob.innerHTML = html;
+    }
+
+    // ── PROGRESS ────────────────────────────────────────────────────────────────
+    function updateProgress() {
+      var pct = ((currentStep + 1) / STEPS.length * 100).toFixed(1);
+      var fill = document.getElementById('progressFill');
+      if (fill) fill.style.width = pct + '%';
+    }
+
+    // ── COPY / EXPORT ───────────────────────────────────────────────────────────
+    function copyIOCs() {
+      var iocs = getIOCs();
+      var lines = [];
+      var sections = ['senders','ips','urls','hashes','c2','users'];
+      var labels = ['SENDER/RETURN-PATH','IPs','URLS','HASHES','C2','AFFECTED USERS'];
+      sections.forEach(function(k, i) {
+        if (iocs[k] && iocs[k].length) {
+          lines.push('## ' + labels[i]);
+          iocs[k].forEach(function(v) { lines.push(v); });
+          lines.push('');
+        }
+      });
+      var text = lines.join('\n').trim();
+      if (!text) { text = '(no IOCs collected yet)'; }
+      navigator.clipboard.writeText(text).then(function() {
+        var btns = document.querySelectorAll('.btn-copy-iocs');
+        btns.forEach(function(b) { b.textContent = 'COPIED ✓'; setTimeout(function() { b.textContent = 'COPY ALL IOCs'; }, 1800); });
+      }).catch(function() {});
+    }
+
+    function exportSummary() {
+      var lines = ['# PHISHOPS Investigation Summary', 'Date: ' + new Date().toISOString().split('T')[0], ''];
+      STEPS.forEach(function(step) {
+        lines.push('## Step ' + step.num + ': ' + step.name + ' - ' + step.subtitle);
+        var data = getStepData(step.id);
+        step.fields.forEach(function(f) {
+          var val = data[f.id];
+          if (val && String(val).trim()) {
+            lines.push('- ' + f.label + ': ' + String(val).trim());
+          }
+        });
+        var checks = getStepChecks(step.id);
+        var completed = step.checks.filter(function(_, i) { return !!checks[i]; });
+        var pending = step.checks.filter(function(_, i) { return !checks[i]; });
+        if (completed.length) { lines.push(''); lines.push('Completed:'); completed.forEach(function(c) { lines.push('  [x] ' + c); }); }
+        if (pending.length) { lines.push('Pending:'); pending.forEach(function(c) { lines.push('  [ ] ' + c); }); }
+        lines.push('');
+      });
+      lines.push('## IOC List');
+      var iocs = getIOCs();
+      var sections = [['senders','Senders/Return-Path'],['ips','IPs'],['urls','URLs'],['hashes','Hashes'],['c2','C2 Indicators'],['users','Affected Users']];
+      sections.forEach(function(s) {
+        if (iocs[s[0]] && iocs[s[0]].length) {
+          lines.push('### ' + s[1]);
+          iocs[s[0]].forEach(function(v) { lines.push('- ' + v); });
+        }
+      });
+      var text = lines.join('\n');
+      navigator.clipboard.writeText(text).then(function() {
+        var btns = document.querySelectorAll('.btn-export');
+        btns.forEach(function(b) { b.textContent = 'COPIED ✓'; setTimeout(function() { b.textContent = 'EXPORT SUMMARY'; }, 2000); });
+      }).catch(function() {
+        var w = window.open('', '_blank');
+        if (w) { w.document.write('<pre>' + text.replace(/</g,'&lt;') + '</pre>'); w.document.close(); }
+      });
+    }
+
+    // ── RESET ───────────────────────────────────────────────────────────────────
+    function confirmReset() {
+      if (confirm('Clear all investigation data? This cannot be undone.')) {
+        localStorage.removeItem(STORAGE_KEY);
+        state = { currentStep: 0, data: {}, checks: {} };
+        currentStep = 0;
+        init();
+      }
+    }
+
+    // ── HELPERS ─────────────────────────────────────────────────────────────────
+    function escHtml(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── MOBILE IOC MODAL ────────────────────────────────────────────────────────
+    function openIOCModal() {
+      renderIOCRail();
+      document.getElementById('iocModalOverlay').classList.add('open');
+    }
+    function closeIOCModal(e) {
+      if (!e || e.target === document.getElementById('iocModalOverlay') || e.currentTarget.tagName === 'BUTTON') {
+        document.getElementById('iocModalOverlay').classList.remove('open');
+      }
+    }
+
+    // ── NAV ─────────────────────────────────────────────────────────────────────
+    function toggleDrawer() { document.getElementById('navDrawer').classList.toggle('open'); }
+    function closeDrawer() { document.getElementById('navDrawer').classList.remove('open'); }
+    document.addEventListener('click', function(e) {
+      var d = document.getElementById('navDrawer'), h = document.getElementById('hamburger');
+      if (d.classList.contains('open') && !d.contains(e.target) && !h.contains(e.target)) closeDrawer();
+    });
+
+    // ── THEME ────────────────────────────────────────────────────────────────────
+    function updateLogo(t) {
+      var el = document.getElementById('navLogo');
+      if (el) el.src = t === 'light'
+        ? 'https://raw.githubusercontent.com/h3ad-sec/h3ad-sec.github.io/main/logo-light.png'
+        : 'https://raw.githubusercontent.com/h3ad-sec/h3ad-sec.github.io/main/logo-dark.png';
+    }
+    function toggleTheme() {
+      var l = document.body.classList.toggle('light');
+      document.body.classList.toggle('dark', !l);
+      var t = l ? 'light' : 'dark';
+      localStorage.setItem('h3ad-theme', t);
+      updateLogo(t);
+    }
+    (function() {
+      var t = localStorage.getItem('h3ad-theme');
+      if (t === 'light') { document.body.classList.add('light'); document.body.classList.remove('dark'); updateLogo('light'); }
+      else { document.body.classList.add('dark'); document.body.classList.remove('light'); }
+    })();
+
+    // ── NAV COMPACT ──────────────────────────────────────────────────────────────
+    (function(){
+      var pill=document.getElementById('xv-nav-pill'),links=document.querySelector('.nav-links'),toggle=document.querySelector('.theme-toggle'),G=20;
+      function check(){if(!links)return;document.body.classList.remove('nav-compact');links.style.visibility='hidden';var lr=links.getBoundingClientRect(),pr=pill?pill.getBoundingClientRect().right:60,tl=toggle?toggle.getBoundingClientRect().left:window.innerWidth-60;links.style.visibility='';document.body.classList.toggle('nav-compact',(pr+G>lr.left)||(lr.right+G>tl));}
+      check();window.addEventListener('resize',check);
+    })();
+
+    // ── INIT ─────────────────────────────────────────────────────────────────────
+    function init() {
+      renderSidebar();
+      renderStepContent(currentStep);
+      renderIOCRail();
+      updateProgress();
+    }
+
+    init();
+  </script>
+</body>
+</html>
