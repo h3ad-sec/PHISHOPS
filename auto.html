@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PHISHOPS SCAN - Automated Phishing Analysis // H3AD-SEC</title>
+  <meta name="description" content="PHISHOPS Auto-Scan: provide sender, URLs, and hash — the tool enriches via VirusTotal, URLScan, and RDAP and returns a full investigation report." />
+  <link rel="icon" href="https://h3ad-sec.github.io/fevicon.png?v=2026" type="image/png" />
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:#080c14;--panel:#0d1117;--panel-alt:#111827;--surface:#18253a;
+      --text:#e6edf3;--text-dim:#96b0cc;--muted:#6b7280;--muted-dim:#3a5470;
+      --accent:#00d4ff;--accent2:#58a6ff;--border:#1c2333;--border-dim:#111827;
+      --primary:#00d4ff;--primary-dim:rgba(0,212,255,0.08);--primary-glow:rgba(0,212,255,0.18);
+      --warn:#f59e0b;--warn-dim:rgba(245,158,11,0.10);--nav-h:48px;--mode-h:36px;
+    }
+    body.light{
+      --bg:#f8fafc;--panel:#ffffff;--panel-alt:#f1f5f9;--surface:#ccd8ec;
+      --text:#0d1117;--text-dim:#142540;--muted:#5c6b8a;--muted-dim:#5c7a9a;
+      --accent:#0284c7;--accent2:#2563eb;--border:#e2e8f0;--border-dim:#f1f5f9;
+      --primary:#0284c7;--primary-dim:rgba(2,132,199,0.07);--primary-glow:rgba(2,132,199,0.14);
+      --warn:#d97706;--warn-dim:rgba(217,119,6,0.08);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
+    body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;font-size:14px;line-height:1.6;min-height:100vh;overflow-x:hidden;transition:background 0.3s,color 0.3s;}
+    body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 45% at 50% 0%,rgba(0,212,255,0.055) 0%,transparent 100%),radial-gradient(ellipse 50% 35% at 5% 100%,rgba(88,166,255,0.04) 0%,transparent 100%);pointer-events:none;z-index:0;}
+    body.light::before{background:radial-gradient(ellipse 80% 45% at 50% 0%,rgba(2,132,199,0.05) 0%,transparent 100%),radial-gradient(ellipse 50% 35% at 5% 100%,rgba(37,99,235,0.03) 0%,transparent 100%);}
+    a{color:inherit;text-decoration:none;}
+
+    /* NAV */
+    .nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(8,12,20,0.92);border-bottom:1px solid var(--border);height:var(--nav-h);display:flex;align-items:center;padding:0 1.25rem;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);}
+    body.light .nav{background:rgba(242,245,250,0.92);}
+    .nav-brand{flex-shrink:0;margin-right:1rem;}.nav-brand img{height:22px;display:block;}
+    .xv-nav-pill{display:flex;flex-direction:column;align-items:flex-start;gap:1px;margin-left:10px;padding-left:10px;border-left:1px solid var(--border);white-space:nowrap;flex-shrink:0;}
+    .xv-pill-name{font-family:'Exo 2',sans-serif;font-weight:700;font-size:13px;letter-spacing:4px;line-height:1;}
+    .xv-pill-accent{color:var(--accent);}.xv-pill-text{color:var(--text);}
+    .xv-pill-tagline{font-family:'Exo 2',sans-serif;font-weight:400;font-size:8px;color:var(--muted);letter-spacing:1.5px;}
+    .nav-links{position:absolute;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:2px;overflow:visible;}
+    .nav-links a{font-family:'Exo 2',sans-serif;font-weight:500;font-size:0.68rem;color:var(--muted);padding:5px 9px;border-radius:4px;border:1px solid transparent;white-space:nowrap;transition:color 0.15s,border-color 0.15s,background 0.15s;flex-shrink:0;}
+    .nav-links a:hover{color:var(--accent);border-color:var(--border);background:rgba(0,212,255,0.05);}
+    .nav-links a.nav-current{color:var(--accent);border-color:var(--accent);background:rgba(0,212,255,0.06);}
+    .nav-divider{width:1px;height:16px;background:var(--border);margin:0 6px;flex-shrink:0;opacity:0.6;}
+    .nav-item{position:relative;display:flex;align-items:center;}
+    .nav-dropdown{display:none;position:absolute;top:100%;left:0;min-width:130px;padding-top:6px;z-index:100;}
+    .nav-dropdown-inner{background:var(--panel);border:1px solid var(--border);border-radius:4px;overflow:hidden;}
+    .nav-item:hover .nav-dropdown{display:block;}
+    .nav-links .nav-dropdown a{font-family:'Exo 2',sans-serif;font-weight:400;display:block;padding:7px 12px;font-size:0.65rem;color:var(--muted);border:none;border-left:2px solid transparent;border-radius:0;transition:0.15s;}
+    .nav-links .nav-dropdown a:hover,.nav-links .nav-dropdown a.nav-current{color:var(--accent);border-left-color:var(--accent);background:rgba(0,212,255,0.04);}
+    .theme-toggle{margin-left:auto;flex-shrink:0;cursor:pointer;padding-left:1rem;}
+    .toggle-track{width:42px;height:22px;background:var(--border);border-radius:50px;position:relative;}
+    .toggle-thumb{width:14px;height:14px;background:var(--accent);border-radius:50%;position:absolute;top:4px;left:4px;transition:transform 0.3s;box-shadow:0 0 8px var(--accent);}
+    body.light .toggle-thumb{transform:translateX(20px);}
+    .hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;cursor:pointer;padding:6px;margin-right:8px;flex-shrink:0;}
+    .hamburger span{display:block;width:18px;height:2px;background:var(--muted);border-radius:2px;}
+    .nav-drawer{display:none;position:fixed;top:var(--nav-h);left:0;right:0;background:var(--panel);border-bottom:1px solid var(--border);z-index:99;padding:0.75rem 1.25rem 1rem;flex-direction:column;gap:2px;max-height:calc(100vh - var(--nav-h));overflow-y:auto;}
+    .nav-drawer.open{display:flex;}
+    .nav-drawer a{font-family:'Exo 2',sans-serif;font-weight:500;font-size:0.75rem;color:var(--text-dim);padding:8px 10px;border-radius:4px;border-left:2px solid transparent;transition:0.15s;}
+    .nav-drawer a:hover{color:var(--accent);border-left-color:var(--accent);background:rgba(0,212,255,0.04);}
+    .nav-drawer a.nav-current{color:var(--accent);border-left-color:var(--accent);}
+    .drawer-sub{padding-left:1.8rem!important;font-size:0.7rem!important;opacity:0.8;}
+    body.nav-compact .nav-links{display:none;}
+    body.nav-compact .hamburger{display:flex;}
+    #scroll-sentinel{position:absolute;top:0;left:0;width:1px;height:10px;pointer-events:none;}
+
+    /* MODE BAR */
+    .mode-bar{position:fixed;top:var(--nav-h);left:0;right:0;z-index:90;background:var(--panel);border-bottom:1px solid var(--border);height:var(--mode-h);display:flex;align-items:center;padding:0 1.5rem;gap:4px;}
+    .mode-btn{font-family:'Share Tech Mono',monospace;font-size:0.58rem;letter-spacing:0.16em;color:var(--muted);padding:4px 14px;border-radius:3px;border:1px solid transparent;cursor:pointer;transition:0.15s;text-transform:uppercase;}
+    .mode-btn:hover{color:var(--text);border-color:var(--border);}
+    .mode-btn.active{color:var(--accent);border-color:var(--accent);background:var(--primary-dim);}
+    .mode-sep{width:1px;height:14px;background:var(--border);margin:0 4px;}
+    .mode-settings{margin-left:auto;font-family:'Share Tech Mono',monospace;font-size:0.56rem;letter-spacing:0.1em;color:var(--muted);cursor:pointer;padding:4px 10px;border:1px solid var(--border);border-radius:3px;background:transparent;transition:0.15s;}
+    .mode-settings:hover{color:var(--accent);border-color:var(--accent);}
+
+    /* PAGE */
+    .page{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:calc(var(--nav-h) + var(--mode-h) + 2rem) 2rem 6rem;}
+
+    /* SECTION LABEL */
+    .section-label{font-family:'Share Tech Mono',monospace;font-size:0.56rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--accent);margin-bottom:1rem;display:flex;align-items:center;gap:8px;}
+    .section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+    /* FIELDS */
+    .fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.5rem;}
+    .field-full{grid-column:1/-1;}
+    .field-group{display:flex;flex-direction:column;gap:5px;}
+    .field-label{font-family:'Share Tech Mono',monospace;font-size:0.52rem;letter-spacing:0.18em;color:var(--muted);text-transform:uppercase;}
+    .field-input,.field-select,.field-textarea{font-family:'Share Tech Mono',monospace;font-size:0.68rem;background:var(--panel-alt);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:7px 10px;outline:none;width:100%;transition:border-color 0.15s;}
+    .field-input:focus,.field-select:focus,.field-textarea:focus{border-color:var(--accent);}
+    .field-input::placeholder,.field-textarea::placeholder{color:var(--muted-dim);}
+    .field-textarea{resize:vertical;min-height:80px;line-height:1.5;}
+    .field-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;}
+
+    /* INPUT PANEL */
+    .input-panel{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:24px;margin-bottom:1.5rem;position:relative;}
+    .input-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0.5;}
+    .input-title{font-family:'Exo 2',sans-serif;font-weight:700;font-size:1.1rem;letter-spacing:0.1em;margin-bottom:4px;}
+    .input-title span{color:var(--accent);}
+    .input-desc{font-family:'Exo 2',sans-serif;font-weight:300;font-size:0.7rem;color:var(--text-dim);margin-bottom:1.5rem;line-height:1.8;}
+    .btn-scan{font-family:'Share Tech Mono',monospace;font-size:0.68rem;letter-spacing:0.14em;background:var(--accent);color:#080c14;border:none;border-radius:4px;padding:10px 28px;cursor:pointer;font-weight:700;transition:0.15s;margin-top:6px;}
+    .btn-scan:hover{opacity:0.88;}
+    .btn-scan:disabled{opacity:0.4;cursor:default;}
+    .no-key-warn{font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--warn);background:var(--warn-dim);border:1px solid rgba(245,158,11,0.3);border-radius:3px;padding:6px 12px;margin-top:10px;display:none;}
+
+    /* PROGRESS PANEL */
+    .progress-panel{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:20px 24px;margin-bottom:1.5rem;display:none;}
+    .progress-title{font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:0.16em;color:var(--accent);margin-bottom:14px;}
+    .scan-log{display:flex;flex-direction:column;gap:6px;}
+    .log-entry{display:flex;align-items:center;gap:10px;font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:0.04em;}
+    .log-icon{width:16px;flex-shrink:0;text-align:center;font-size:0.65rem;}
+    .log-pending .log-icon{color:var(--muted-dim);}
+    .log-running .log-icon{color:var(--accent);}
+    .log-done .log-icon{color:var(--accent);}
+    .log-skip .log-icon{color:var(--muted-dim);}
+    .log-err .log-icon{color:var(--warn);}
+    .log-text{color:var(--text-dim);}
+    .log-running .log-text{color:var(--text);}
+    .log-done .log-text{color:var(--muted);}
+    .log-skip .log-text{color:var(--muted-dim);}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .spin{display:inline-block;animation:spin 1s linear infinite;}
+
+    /* RESULTS */
+    .results-panel{display:none;}
+
+    /* VERDICT BANNER */
+    .verdict-banner{border-radius:6px;padding:20px 24px;margin-bottom:1.5rem;border:1px solid var(--border);position:relative;overflow:hidden;}
+    .verdict-banner::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+    .verdict-critical .verdict-banner::before,.verdict-high .verdict-banner::before{background:linear-gradient(90deg,transparent,var(--warn),transparent);}
+    .verdict-medium .verdict-banner::before{background:linear-gradient(90deg,transparent,var(--accent2),transparent);}
+    .verdict-low .verdict-banner::before{background:linear-gradient(90deg,transparent,var(--muted),transparent);}
+    .verdict-critical{--vcolor:var(--warn);}
+    .verdict-high{--vcolor:var(--warn);}
+    .verdict-medium{--vcolor:var(--accent2);}
+    .verdict-low{--vcolor:var(--muted);}
+    .verdict-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+    .verdict-label{font-family:'Share Tech Mono',monospace;font-size:1.2rem;letter-spacing:0.18em;font-weight:700;color:var(--vcolor);}
+    .verdict-score{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--muted);letter-spacing:0.1em;}
+    .verdict-score span{color:var(--vcolor);}
+    .verdict-stats{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+    .vstat{font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:0.1em;padding:3px 10px;border-radius:3px;border:1px solid var(--border);color:var(--muted);}
+    .vstat.flagged{color:var(--warn);border-color:rgba(245,158,11,0.3);background:var(--warn-dim);}
+    .vstat.clean{color:var(--accent);border-color:rgba(0,212,255,0.25);background:var(--primary-dim);}
+
+    /* IOC CARDS */
+    .ioc-cards{display:flex;flex-direction:column;gap:10px;margin-bottom:1.5rem;}
+    .ioc-card{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:14px 16px;}
+    .ioc-card-header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;}
+    .ioc-card-label{font-family:'Share Tech Mono',monospace;font-size:0.58rem;letter-spacing:0.12em;color:var(--muted);}
+    .ioc-card-value{font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--text);word-break:break-all;}
+    .ioc-verdict-badge{font-family:'Share Tech Mono',monospace;font-size:0.52rem;letter-spacing:0.14em;padding:2px 8px;border-radius:2px;border:1px solid;white-space:nowrap;flex-shrink:0;}
+    .badge-malicious{color:var(--warn);border-color:rgba(245,158,11,0.35);background:var(--warn-dim);}
+    .badge-suspicious{color:var(--accent2);border-color:rgba(88,166,255,0.3);background:rgba(88,166,255,0.08);}
+    .badge-clean{color:var(--muted);border-color:var(--border);background:transparent;}
+    .badge-unknown{color:var(--muted-dim);border-color:var(--border-dim);background:transparent;}
+    .badge-skipped{color:var(--muted-dim);border-color:var(--border-dim);background:transparent;}
+    .ioc-card-details{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+    .ioc-detail{font-family:'Share Tech Mono',monospace;font-size:0.54rem;color:var(--muted);background:var(--panel-alt);border:1px solid var(--border-dim);border-radius:2px;padding:2px 7px;}
+    .ioc-detail.highlight{color:var(--warn);background:var(--warn-dim);border-color:rgba(245,158,11,0.25);}
+
+    /* QUICK LAUNCH */
+    .quick-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.5rem;}
+    .quick-btn{font-family:'Share Tech Mono',monospace;font-size:0.56rem;letter-spacing:0.1em;color:var(--accent2);background:transparent;border:1px solid var(--border);border-radius:3px;padding:5px 12px;cursor:pointer;transition:0.15s;text-decoration:none;display:inline-flex;align-items:center;gap:5px;}
+    .quick-btn:hover{border-color:var(--accent2);background:rgba(88,166,255,0.06);}
+
+    /* CHECKLIST RESULTS */
+    .checklist-steps{display:flex;flex-direction:column;gap:16px;margin-bottom:1.5rem;}
+    .cl-step{background:var(--panel);border:1px solid var(--border);border-radius:4px;overflow:hidden;}
+    .cl-step-header{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border-dim);cursor:pointer;user-select:none;}
+    .cl-step-num{font-family:'Share Tech Mono',monospace;font-size:0.55rem;color:var(--muted-dim);}
+    .cl-step-name{font-family:'Exo 2',sans-serif;font-weight:600;font-size:0.7rem;letter-spacing:0.1em;color:var(--text-dim);flex:1;}
+    .cl-step-progress{font-family:'Share Tech Mono',monospace;font-size:0.52rem;color:var(--muted);margin-left:auto;}
+    .cl-step-toggle{font-size:0.6rem;color:var(--muted);}
+    .cl-items{padding:8px 14px;display:flex;flex-direction:column;gap:5px;}
+    .cl-item{display:flex;align-items:flex-start;gap:8px;padding:4px 0;}
+    .cl-icon{font-size:0.65rem;flex-shrink:0;margin-top:1px;width:14px;}
+    .cl-auto{color:var(--accent);}
+    .cl-manual-done{color:var(--accent);opacity:0.6;}
+    .cl-manual{color:var(--muted-dim);}
+    .cl-warn{color:var(--warn);}
+    .cl-item-text{font-family:'Exo 2',sans-serif;font-size:0.67rem;color:var(--text-dim);flex:1;line-height:1.4;}
+    .cl-item-note{font-family:'Share Tech Mono',monospace;font-size:0.54rem;color:var(--muted);margin-top:2px;}
+    .cl-tag{font-family:'Share Tech Mono',monospace;font-size:0.48rem;letter-spacing:0.12em;padding:1px 6px;border-radius:2px;margin-left:6px;vertical-align:middle;}
+    .cl-tag-auto{color:var(--accent);background:var(--primary-dim);border:1px solid rgba(0,212,255,0.2);}
+    .cl-tag-manual{color:var(--muted);background:transparent;border:1px solid var(--border);}
+
+    /* STEPS NARRATIVE */
+    .steps-narrative{display:flex;flex-direction:column;gap:8px;margin-bottom:1.5rem;}
+    .step-note{display:flex;gap:12px;padding:10px 14px;background:var(--panel);border:1px solid var(--border);border-radius:4px;}
+    .step-note-num{font-family:'Share Tech Mono',monospace;font-size:0.56rem;color:var(--accent);flex-shrink:0;margin-top:1px;}
+    .step-note-body{flex:1;}
+    .step-note-title{font-family:'Exo 2',sans-serif;font-weight:600;font-size:0.68rem;letter-spacing:0.08em;color:var(--text);margin-bottom:3px;}
+    .step-note-text{font-family:'Exo 2',sans-serif;font-size:0.65rem;color:var(--text-dim);line-height:1.6;}
+
+    /* EXPORT */
+    .export-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:2rem;}
+    .btn-export{font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:0.12em;padding:8px 20px;border-radius:3px;cursor:pointer;transition:0.15s;border:1px solid;}
+    .btn-export-primary{background:var(--primary-dim);color:var(--accent);border-color:rgba(0,212,255,0.3);}
+    .btn-export-primary:hover{background:var(--primary-glow);}
+    .btn-export-secondary{background:transparent;color:var(--muted);border-color:var(--border);}
+    .btn-export-secondary:hover{color:var(--text);border-color:var(--muted);}
+
+    /* SETTINGS MODAL */
+    .modal-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.72);backdrop-filter:blur(6px);}
+    .modal-overlay.open{display:flex;align-items:center;justify-content:center;}
+    .modal-box{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:24px;width:100%;max-width:420px;position:relative;}
+    .modal-title{font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.9rem;letter-spacing:0.1em;margin-bottom:4px;}
+    .modal-title span{color:var(--accent);}
+    .modal-desc{font-family:'Exo 2',sans-serif;font-size:0.67rem;color:var(--text-dim);margin-bottom:1.2rem;line-height:1.7;}
+    .modal-fields{display:flex;flex-direction:column;gap:12px;margin-bottom:1.2rem;}
+    .modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+    .btn-save{font-family:'Share Tech Mono',monospace;font-size:0.58rem;letter-spacing:0.1em;background:var(--accent);color:#080c14;border:none;border-radius:3px;padding:7px 18px;cursor:pointer;font-weight:700;}
+    .btn-cancel{font-family:'Share Tech Mono',monospace;font-size:0.58rem;letter-spacing:0.1em;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:3px;padding:7px 14px;cursor:pointer;}
+
+    /* FOOTER */
+    .po-footer{border-top:1px solid var(--border);padding:1rem 2rem;font-family:'Share Tech Mono',monospace;font-size:0.56rem;color:var(--muted);letter-spacing:0.08em;position:relative;z-index:1;}
+
+    @media(max-width:640px){
+      .nav-links{display:none;}.hamburger{display:flex;}
+      .page{padding:calc(var(--nav-h)+var(--mode-h)+1rem) 1rem 5rem;}
+      .fields-grid{grid-template-columns:1fr;}.field-full{grid-column:1;}
+      .modal-box{margin:1rem;}
+    }
+  </style>
+</head>
+<body class="dark">
+  <div id="scroll-sentinel" aria-hidden="true"></div>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="hamburger" id="hamburger" onclick="toggleDrawer()"><span></span><span></span><span></span></div>
+    <a class="nav-brand" href="https://h3ad-sec.github.io" target="_blank" rel="noopener">
+      <img id="navLogo" src="https://raw.githubusercontent.com/h3ad-sec/h3ad-sec.github.io/main/logo-dark.png" alt="H3AD-SEC" />
+    </a>
+    <a class="xv-nav-pill" href="https://h3ad-sec.github.io/PHISHOPS/" style="text-decoration:none">
+      <span class="xv-pill-name"><span class="xv-pill-accent">PHISH</span><span class="xv-pill-text">OPS</span></span>
+      <span class="xv-pill-tagline">Automated Phishing Analysis.</span>
+    </a>
+    <div class="nav-links">
+      <div class="nav-divider"></div>
+      <a href="https://h3ad-sec.github.io" target="_blank" rel="noopener">HOME</a>
+      <a href="https://h3ad-sec.github.io/H3AD/" target="_blank" rel="noopener">H3AD</a>
+      <div class="nav-divider"></div>
+      <div class="nav-item"><a href="https://h3ad-sec.github.io/H3AD-X/" target="_blank" rel="noopener">H3AD-X</a><div class="nav-dropdown"><div class="nav-dropdown-inner"><a href="https://h3ad-sec.github.io/X-VERDIKT/" target="_blank" rel="noopener">X-VERDIKT</a><a href="https://h3ad-sec.github.io/PARSE-X/" target="_blank" rel="noopener">PARSE-X</a><a href="https://h3ad-sec.github.io/DNSCOPE/" target="_blank" rel="noopener">DNSCOPE</a></div></div></div>
+      <div class="nav-item"><a href="https://h3ad-sec.github.io/H3AD-AI/" target="_blank" rel="noopener">H3AD-AI</a><div class="nav-dropdown"><div class="nav-dropdown-inner"><a href="https://h3ad-sec.github.io/INSIGHT-AI/" target="_blank" rel="noopener">INSIGHT-AI</a><a href="https://h3ad-sec.github.io/QUERYCRAFT-AI/" target="_blank" rel="noopener">QUERYCRAFT-AI</a><a href="https://h3ad-sec.github.io/FPLENS-AI/" target="_blank" rel="noopener">FPLENS-AI</a><a href="https://h3ad-sec.github.io/ATTMAP-AI/" target="_blank" rel="noopener">ATTMAP-AI</a><a href="https://h3ad-sec.github.io/CHRONO-AI/" target="_blank" rel="noopener">CHRONO-AI</a></div></div></div>
+      <div class="nav-item"><a href="https://h3ad-sec.github.io/H3AD-DETECT/" target="_blank" rel="noopener">H3AD-DETECT</a><div class="nav-dropdown"><div class="nav-dropdown-inner"><a href="https://h3ad-sec.github.io/TRACERULES/" target="_blank" rel="noopener">TRACERULES</a></div></div></div>
+      <div class="nav-item"><a href="https://h3ad-sec.github.io/H3AD-HUNT/" target="_blank" rel="noopener">H3AD-HUNT</a><div class="nav-dropdown"><div class="nav-dropdown-inner"><a href="https://h3ad-sec.github.io/HYPOS/" target="_blank" rel="noopener">HYPOS</a><a href="https://h3ad-sec.github.io/PIVEX/" target="_blank" rel="noopener">PIVEX</a><a href="https://h3ad-sec.github.io/TRACEPULSE/" target="_blank" rel="noopener">TRACEPULSE</a></div></div></div>
+      <div class="nav-item"><a href="https://h3ad-sec.github.io/H3AD-OPS/" target="_blank" rel="noopener">H3AD-OPS</a><div class="nav-dropdown"><div class="nav-dropdown-inner"><a href="https://h3ad-sec.github.io/QUICKTRACE/" target="_blank" rel="noopener">QUICKTRACE</a><a href="https://h3ad-sec.github.io/PHISHOPS/" class="nav-current">PHISHOPS</a></div></div></div>
+      <a href="https://h3ad-sec.github.io/H3AD-DF/" target="_blank" rel="noopener">H3AD-DF</a>
+      <a href="https://h3ad-sec.github.io/H3AD-IR/" target="_blank" rel="noopener">H3AD-IR</a>
+      <div class="nav-divider"></div>
+      <a href="mailto:h3adsec@gmail.com">CONTACT</a>
+    </div>
+    <div class="theme-toggle" onclick="toggleTheme()"><div class="toggle-track"><div class="toggle-thumb"></div></div></div>
+  </nav>
+
+  <!-- MOBILE DRAWER -->
+  <div class="nav-drawer" id="navDrawer">
+    <a href="https://h3ad-sec.github.io" target="_blank" rel="noopener" onclick="closeDrawer()">HOME ↗</a>
+    <a href="https://h3ad-sec.github.io/H3AD/" target="_blank" rel="noopener" onclick="closeDrawer()">H3AD ↗</a>
+    <a href="https://h3ad-sec.github.io/H3AD-X/" target="_blank" rel="noopener" onclick="closeDrawer()">H3AD-X ↗</a>
+    <a href="https://h3ad-sec.github.io/X-VERDIKT/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ X-VERDIKT ↗</a>
+    <a href="https://h3ad-sec.github.io/PARSE-X/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ PARSE-X ↗</a>
+    <a href="https://h3ad-sec.github.io/DNSCOPE/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ DNSCOPE ↗</a>
+    <a href="https://h3ad-sec.github.io/H3AD-AI/" target="_blank" rel="noopener" onclick="closeDrawer()">H3AD-AI ↗</a>
+    <a href="https://h3ad-sec.github.io/INSIGHT-AI/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ INSIGHT-AI ↗</a>
+    <a href="https://h3ad-sec.github.io/QUERYCRAFT-AI/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ QUERYCRAFT-AI ↗</a>
+    <a href="https://h3ad-sec.github.io/FPLENS-AI/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ FPLENS-AI ↗</a>
+    <a href="https://h3ad-sec.github.io/ATTMAP-AI/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ ATTMAP-AI ↗</a>
+    <a href="https://h3ad-sec.github.io/CHRONO-AI/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ ATTMAP-AI ↗</a>
+    <a href="https://h3ad-sec.github.io/H3AD-DETECT/" target="_blank" rel="noopener" onclick="closeDrawer()">H3AD-DETECT ↗</a>
+    <a href="https://h3ad-sec.github.io/TRACERULES/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ TRACERULES ↗</a>
+    <a href="https://h3ad-sec.github.io/H3AD-HUNT/" target="_blank" rel="noopener" onclick="closeDrawer()">H3AD-HUNT ↗</a>
+    <a href="https://h3ad-sec.github.io/HYPOS/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ HYPOS ↗</a>
+    <a href="https://h3ad-sec.github.io/PIVEX/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ PIVEX ↗</a>
+    <a href="https://h3ad-sec.github.io/TRACEPULSE/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ TRACEPULSE ↗</a>
+    <a href="https://h3ad-sec.github.io/H3AD-OPS/" target="_blank" rel="noopener" onclick="closeDrawer()">H3AD-OPS ↗</a>
+    <a href="https://h3ad-sec.github.io/QUICKTRACE/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ QUICKTRACE ↗</a>
+    <a href="https://h3ad-sec.github.io/PHISHOPS/" onclick="closeDrawer()" class="drawer-sub nav-current">↳ PHISHOPS</a>
+    <a href="https://h3ad-sec.github.io/H3AD-DF/" target="_blank" rel="noopener" onclick="closeDrawer()">H3AD-DF ↗</a>
+    <a href="https://h3ad-sec.github.io/H3AD-IR/" target="_blank" rel="noopener" onclick="closeDrawer()">H3AD-IR ↗</a>
+    <a href="mailto:h3adsec@gmail.com" onclick="closeDrawer()">CONTACT</a>
+  </div>
+
+  <!-- MODE BAR -->
+  <div class="mode-bar">
+    <a class="mode-btn" href="./index.html">MANUAL TRACKER</a>
+    <div class="mode-sep"></div>
+    <a class="mode-btn active" href="./auto.html">AUTO SCAN</a>
+    <button class="mode-settings" onclick="openSettings()">&#9881; API KEYS</button>
+  </div>
+
+  <div class="page">
+
+    <!-- INPUT FORM -->
+    <div class="input-panel" id="inputPanel">
+      <div class="input-title"><span>PHISHOPS</span> AUTO SCAN</div>
+      <div class="input-desc">Provide what you know. The tool calls VirusTotal, URLScan.io, and RDAP automatically and returns a full investigation report with risk score, IOC verdicts, and completed checklist. API keys required for VT and URLScan — set them via the API KEYS button above.</div>
+
+      <div class="section-label">EMAIL METADATA</div>
+      <div class="fields-grid">
+        <div class="field-group"><label class="field-label">SENDER ADDRESS</label><input class="field-input" id="f_sender" type="text" placeholder="attacker@phish-domain.com" /></div>
+        <div class="field-group"><label class="field-label">REPLY-TO</label><input class="field-input" id="f_replyTo" type="text" placeholder="reply@other-domain.com" /></div>
+        <div class="field-group"><label class="field-label">RETURN-PATH</label><input class="field-input" id="f_returnPath" type="text" placeholder="bounce@domain.com" /></div>
+        <div class="field-group"><label class="field-label">RECIPIENT(S)</label><input class="field-input" id="f_recipients" type="text" placeholder="user@company.com" /></div>
+        <div class="field-group field-full"><label class="field-label">SUBJECT</label><input class="field-input" id="f_subject" type="text" placeholder="Email subject line" /></div>
+      </div>
+
+      <div class="section-label">HEADER AUTH RESULTS</div>
+      <div class="fields-grid">
+        <div class="field-group"><label class="field-label">SPF</label><select class="field-select" id="f_spf"><option value="">-- not checked --</option><option value="pass">Pass</option><option value="fail">Fail</option><option value="softfail">Softfail</option><option value="none">None / Missing</option></select></div>
+        <div class="field-group"><label class="field-label">DKIM</label><select class="field-select" id="f_dkim"><option value="">-- not checked --</option><option value="pass">Pass</option><option value="fail">Fail</option><option value="none">None / Missing</option></select></div>
+        <div class="field-group"><label class="field-label">DMARC</label><select class="field-select" id="f_dmarc"><option value="">-- not checked --</option><option value="pass">Pass</option><option value="fail">Fail</option><option value="none">None / Missing</option></select></div>
+        <div class="field-group"><label class="field-label">X-ORIGINATING-IP</label><input class="field-input" id="f_origIp" type="text" placeholder="203.0.113.42" /></div>
+      </div>
+
+      <div class="section-label">IOCs TO ENRICH</div>
+      <div class="fields-grid">
+        <div class="field-group field-full"><label class="field-label">URLS / DOMAINS (one per line, raw or defanged)</label><textarea class="field-textarea" id="f_urls" rows="4" placeholder="https://login.phish-example.com/verify&#10;http://malicious-domain.net/payload&#10;hxxps://spoofed[.]com"></textarea></div>
+        <div class="field-group"><label class="field-label">FILE HASH (SHA256 or MD5)</label><input class="field-input" id="f_hash" type="text" placeholder="e3b0c44298fc1c149afbf4c8..." /></div>
+        <div class="field-group"><label class="field-label">AFFECTED USER</label><input class="field-input" id="f_user" type="text" placeholder="user@company.com" /></div>
+      </div>
+
+      <div id="noKeyWarn" class="no-key-warn">No VirusTotal API key set. Enrichment checks will be skipped. Add your key via the API KEYS button above.</div>
+      <button class="btn-scan" id="btnScan" onclick="runScan()">RUN SCAN</button>
+    </div>
+
+    <!-- PROGRESS PANEL -->
+    <div class="progress-panel" id="progressPanel">
+      <div class="progress-title">SCANNING...</div>
+      <div class="scan-log" id="scanLog"></div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="results-panel" id="resultsPanel">
+
+      <!-- VERDICT -->
+      <div id="verdictBanner" class="verdict-banner"></div>
+
+      <!-- IOC ANALYSIS -->
+      <div class="section-label">IOC ANALYSIS</div>
+      <div class="ioc-cards" id="iocCards"></div>
+
+      <!-- QUICK LAUNCH -->
+      <div class="section-label">MANUAL VERIFICATION TOOLS</div>
+      <div class="quick-row" id="quickRow"></div>
+
+      <!-- HEADER SUMMARY -->
+      <div class="section-label">HEADER AUTH SUMMARY</div>
+      <div id="headerSummary" style="margin-bottom:1.5rem;"></div>
+
+      <!-- CHECKLIST + STEPS (single place subsection) -->
+      <div class="section-label">FULL INVESTIGATION CHECKLIST</div>
+      <div id="checklistSteps" class="checklist-steps"></div>
+
+      <div class="section-label">INVESTIGATION STEPS FOLLOWED</div>
+      <div id="stepsNarrative" class="steps-narrative"></div>
+
+      <!-- EXPORT -->
+      <div class="section-label">EXPORT</div>
+      <div class="export-bar">
+        <button class="btn-export btn-export-primary" onclick="exportReport()">COPY FULL REPORT</button>
+        <button class="btn-export btn-export-secondary" onclick="resetScan()">NEW SCAN</button>
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="po-footer">H3AD-SEC &middot; PHISHOPS AUTO SCAN &middot; AUTOMATED PHISHING ANALYSIS</footer>
+
+  <!-- SETTINGS MODAL -->
+  <div class="modal-overlay" id="settingsModal" onclick="closeSettingsOutside(event)">
+    <div class="modal-box">
+      <div class="modal-title"><span>API</span> KEYS</div>
+      <div class="modal-desc">Keys are stored in your browser only (localStorage). Never sent anywhere except to the respective API. Free tier VT key gives 4 requests/min — the scanner throttles automatically.</div>
+      <div class="modal-fields">
+        <div class="field-group"><label class="field-label">VIRUSTOTAL API KEY</label><input class="field-input" id="set_vt" type="password" placeholder="Enter VirusTotal API v3 key" /></div>
+        <div class="field-group"><label class="field-label">URLSCAN.IO API KEY (optional)</label><input class="field-input" id="set_urlscan" type="password" placeholder="Enter URLScan.io API key" /></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeSettings()">CANCEL</button>
+        <button class="btn-save" onclick="saveSettings()">SAVE KEYS</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // ── SETTINGS ────────────────────────────────────────────────────────────────
+  var SETTINGS_KEY = 'phishops_scan_settings';
+
+  function loadSettings() {
+    try { return JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); } catch(e) { return {}; }
+  }
+
+  function saveSettings() {
+    var s = loadSettings();
+    s.vtKey = document.getElementById('set_vt').value.trim();
+    s.urlscanKey = document.getElementById('set_urlscan').value.trim();
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+    closeSettings();
+    checkKeyState();
+  }
+
+  function openSettings() {
+    var s = loadSettings();
+    document.getElementById('set_vt').value = s.vtKey || '';
+    document.getElementById('set_urlscan').value = s.urlscanKey || '';
+    document.getElementById('settingsModal').classList.add('open');
+  }
+  function closeSettings() { document.getElementById('settingsModal').classList.remove('open'); }
+  function closeSettingsOutside(e) { if (e.target === document.getElementById('settingsModal')) closeSettings(); }
+
+  function checkKeyState() {
+    var s = loadSettings();
+    document.getElementById('noKeyWarn').style.display = s.vtKey ? 'none' : 'block';
+  }
+
+  // ── UTILITIES ───────────────────────────────────────────────────────────────
+  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  function extractDomain(url) {
+    try {
+      var u = url.trim()
+        .replace(/^hxxps?:\/\//i, 'https://')
+        .replace(/\[\.]/g, '.')
+        .replace(/\[\.\]/g, '.');
+      if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
+      return new URL(u).hostname.replace(/^www\./, '');
+    } catch(e) { return null; }
+  }
+
+  function refang(url) {
+    return url.trim()
+      .replace(/^hxxps?:\/\//i, function(m) { return m.replace('xx','tt'); })
+      .replace(/\[\.]/g, '.').replace(/\[\.\]/g, '.');
+  }
+
+  function vtUrlId(url) {
+    try { return btoa(url).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); } catch(e) { return null; }
+  }
+
+  function domainAge(creationDateStr) {
+    if (!creationDateStr) return null;
+    var created = new Date(creationDateStr);
+    var now = new Date();
+    return Math.floor((now - created) / (1000 * 60 * 60 * 24));
+  }
+
+  function sleep(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
+
+  // ── PROGRESS LOG ────────────────────────────────────────────────────────────
+  var logEntries = [];
+  function addLog(id, text) {
+    logEntries.push({ id: id, text: text, status: 'pending' });
+    renderLog();
+    return id;
+  }
+  function setLog(id, status, text) {
+    var e = logEntries.find(function(x) { return x.id === id; });
+    if (e) { e.status = status; if (text) e.text = text; }
+    renderLog();
+  }
+  function renderLog() {
+    var icons = { pending: '<span style="color:var(--muted-dim)">○</span>', running: '<span class="spin" style="color:var(--accent)">◌</span>', done: '<span style="color:var(--accent)">✓</span>', skip: '<span style="color:var(--muted-dim)">—</span>', err: '<span style="color:var(--warn)">!</span>' };
+    document.getElementById('scanLog').innerHTML = logEntries.map(function(e) {
+      return '<div class="log-entry log-' + e.status + '"><div class="log-icon">' + (icons[e.status] || '○') + '</div><div class="log-text">' + esc(e.text) + '</div></div>';
+    }).join('');
+  }
+
+  // ── API CALLS ───────────────────────────────────────────────────────────────
+  async function vtGet(path, apiKey) {
+    var r = await fetch('https://www.virustotal.com/api/v3' + path, { headers: { 'x-apikey': apiKey } });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  }
+
+  async function vtDomain(domain, apiKey) {
+    var data = await vtGet('/domains/' + encodeURIComponent(domain), apiKey);
+    var attrs = data.data && data.data.attributes;
+    if (!attrs) return null;
+    var stats = attrs.last_analysis_stats || {};
+    return { malicious: stats.malicious || 0, suspicious: stats.suspicious || 0, harmless: stats.harmless || 0, undetected: stats.undetected || 0, total: Object.values(stats).reduce(function(a,b){return a+b;},0), creation_date: attrs.creation_date, categories: attrs.categories || {}, reputation: attrs.reputation || 0 };
+  }
+
+  async function vtUrl(url, apiKey) {
+    var id = vtUrlId(url);
+    if (!id) return null;
+    try {
+      var data = await vtGet('/urls/' + id, apiKey);
+      var attrs = data.data && data.data.attributes;
+      if (!attrs) return null;
+      var stats = attrs.last_analysis_stats || {};
+      return { malicious: stats.malicious || 0, suspicious: stats.suspicious || 0, harmless: stats.harmless || 0, undetected: stats.undetected || 0, total: Object.values(stats).reduce(function(a,b){return a+b;},0), final_url: attrs.url };
+    } catch(e) { return null; }
+  }
+
+  async function vtIp(ip, apiKey) {
+    var data = await vtGet('/ip_addresses/' + encodeURIComponent(ip), apiKey);
+    var attrs = data.data && data.data.attributes;
+    if (!attrs) return null;
+    var stats = attrs.last_analysis_stats || {};
+    return { malicious: stats.malicious || 0, suspicious: stats.suspicious || 0, harmless: stats.harmless || 0, undetected: stats.undetected || 0, total: Object.values(stats).reduce(function(a,b){return a+b;},0), country: attrs.country, asn: attrs.asn, as_owner: attrs.as_owner };
+  }
+
+  async function vtHash(hash, apiKey) {
+    var data = await vtGet('/files/' + hash, apiKey);
+    var attrs = data.data && data.data.attributes;
+    if (!attrs) return null;
+    var stats = attrs.last_analysis_stats || {};
+    return { malicious: stats.malicious || 0, suspicious: stats.suspicious || 0, harmless: stats.harmless || 0, undetected: stats.undetected || 0, total: Object.values(stats).reduce(function(a,b){return a+b;},0), type: attrs.type_description, name: attrs.meaningful_name, size: attrs.size };
+  }
+
+  async function rdapAge(domain) {
+    try {
+      var r = await fetch('https://rdap.org/domain/' + encodeURIComponent(domain));
+      if (!r.ok) return null;
+      var data = await r.json();
+      var events = data.events || [];
+      var reg = events.find(function(e) { return e.eventAction === 'registration'; });
+      return reg ? reg.eventDate : null;
+    } catch(e) { return null; }
+  }
+
+  async function urlscanSubmit(url, apiKey) {
+    try {
+      var r = await fetch('https://urlscan.io/api/v1/scan/', {
+        method: 'POST',
+        headers: { 'API-Key': apiKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: url, visibility: 'public' })
+      });
+      if (!r.ok) return null;
+      var data = await r.json();
+      return data.uuid || null;
+    } catch(e) { return null; }
+  }
+
+  async function urlscanResult(uuid) {
+    for (var i = 0; i < 4; i++) {
+      await sleep(8000);
+      try {
+        var r = await fetch('https://urlscan.io/api/v1/result/' + uuid + '/');
+        if (r.status === 404) continue;
+        if (!r.ok) return null;
+        var data = await r.json();
+        return { verdicts: data.verdicts, screenshot: data.task && data.task.screenshotURL, resultURL: 'https://urlscan.io/result/' + uuid + '/' };
+      } catch(e) { continue; }
+    }
+    return null;
+  }
+
+  // ── SCORING ─────────────────────────────────────────────────────────────────
+  function scoreFromStats(stats) {
+    if (!stats) return 0;
+    return Math.min(40, (stats.malicious || 0) * 5 + (stats.suspicious || 0) * 2);
+  }
+
+  function verdictLabel(score) {
+    if (score >= 70) return 'CRITICAL';
+    if (score >= 45) return 'HIGH RISK';
+    if (score >= 20) return 'MEDIUM RISK';
+    return 'LOW RISK';
+  }
+
+  function verdictClass(score) {
+    if (score >= 70) return 'verdict-critical';
+    if (score >= 45) return 'verdict-high';
+    if (score >= 20) return 'verdict-medium';
+    return 'verdict-low';
+  }
+
+  function iocBadge(stats) {
+    if (!stats) return '<span class="ioc-verdict-badge badge-skipped">SKIPPED</span>';
+    if (stats.malicious > 0) return '<span class="ioc-verdict-badge badge-malicious">MALICIOUS (' + stats.malicious + '/' + stats.total + ')</span>';
+    if (stats.suspicious > 0) return '<span class="ioc-verdict-badge badge-suspicious">SUSPICIOUS (' + stats.suspicious + '/' + stats.total + ')</span>';
+    return '<span class="ioc-verdict-badge badge-clean">CLEAN (' + stats.harmless + '/' + stats.total + ')</span>';
+  }
+
+  // ── MAIN SCAN ───────────────────────────────────────────────────────────────
+  var scanResults = {};
+
+  async function runScan() {
+    var s = loadSettings();
+    var vtKey = s.vtKey || '';
+    var urlscanKey = s.urlscanKey || '';
+
+    // Parse inputs
+    var inputs = {
+      sender: document.getElementById('f_sender').value.trim(),
+      replyTo: document.getElementById('f_replyTo').value.trim(),
+      returnPath: document.getElementById('f_returnPath').value.trim(),
+      recipients: document.getElementById('f_recipients').value.trim(),
+      subject: document.getElementById('f_subject').value.trim(),
+      spf: document.getElementById('f_spf').value,
+      dkim: document.getElementById('f_dkim').value,
+      dmarc: document.getElementById('f_dmarc').value,
+      origIp: document.getElementById('f_origIp').value.trim(),
+      hash: document.getElementById('f_hash').value.trim(),
+      user: document.getElementById('f_user').value.trim(),
+      urlsRaw: document.getElementById('f_urls').value.trim(),
+    };
+
+    // Extract URL list
+    inputs.urls = inputs.urlsRaw ? inputs.urlsRaw.split('\n').map(function(u){return u.trim();}).filter(Boolean) : [];
+    inputs.domains = [];
+    inputs.urls.forEach(function(u) {
+      var d = extractDomain(u);
+      if (d && inputs.domains.indexOf(d) === -1) inputs.domains.push(d);
+    });
+
+    // Sender domain
+    if (inputs.sender && inputs.sender.includes('@')) {
+      var sd = inputs.sender.split('@')[1];
+      if (sd && inputs.domains.indexOf(sd) === -1) inputs.domains.push(sd);
+    }
+
+    // Show progress panel
+    document.getElementById('inputPanel').style.display = 'none';
+    document.getElementById('progressPanel').style.display = 'block';
+    document.getElementById('resultsPanel').style.display = 'none';
+    logEntries = [];
+
+    var score = 0;
+    scanResults = { inputs: inputs, domains: {}, urls: {}, ips: {}, hash: null, urlscans: {} };
+
+    addLog('parse', 'Parsing inputs and extracting IOCs...');
+    setLog('parse', 'done', 'Parsed: ' + inputs.domains.length + ' domain(s), ' + inputs.urls.length + ' URL(s), ' + (inputs.origIp ? '1 IP' : '0 IPs') + (inputs.hash ? ', 1 hash' : ''));
+
+    // Auth score
+    if (inputs.dmarc === 'fail' || inputs.dmarc === 'none') score += 28;
+    if (inputs.spf === 'fail' || inputs.spf === 'softfail' || inputs.spf === 'none') score += 20;
+    if (inputs.dkim === 'fail' || inputs.dkim === 'none') score += 14;
+
+    // Mismatch score
+    var mismatch = inputs.sender && inputs.replyTo && inputs.sender !== inputs.replyTo;
+    if (mismatch) score += 10;
+    var rpMismatch = inputs.sender && inputs.returnPath && inputs.sender !== inputs.returnPath;
+    if (rpMismatch) score += 8;
+
+    // VT domain checks
+    for (var i = 0; i < inputs.domains.length; i++) {
+      var dom = inputs.domains[i];
+      var lid = 'dom_' + i;
+      addLog(lid, 'VirusTotal: domain lookup — ' + dom);
+      if (!vtKey) { setLog(lid, 'skip', 'Skipped (no VT key): ' + dom); scanResults.domains[dom] = null; continue; }
+      try {
+        await sleep(i > 0 ? 16000 : 0); // throttle VT 4 req/min
+        var res = await vtDomain(dom, vtKey);
+        scanResults.domains[dom] = res;
+        if (res) {
+          score += scoreFromStats(res);
+          var ageStr = '';
+          if (res.creation_date) {
+            var ageDays = domainAge(new Date(res.creation_date * 1000).toISOString());
+            scanResults.domains[dom].ageDays = ageDays;
+            if (ageDays !== null && ageDays < 7) score += 40;
+            else if (ageDays !== null && ageDays < 30) score += 20;
+            ageStr = ' · age ' + (ageDays !== null ? ageDays + 'd' : 'unknown');
+          }
+          setLog(lid, 'done', 'VT domain: ' + dom + ' — ' + (res.malicious > 0 ? res.malicious + ' malicious' : 'clean') + ageStr);
+        } else {
+          setLog(lid, 'done', 'VT domain: ' + dom + ' — no data');
+        }
+      } catch(e) { setLog(lid, 'err', 'VT domain failed: ' + dom + ' (' + e.message + ')'); scanResults.domains[dom] = null; }
+    }
+
+    // RDAP age for domains without VT creation_date
+    for (var j = 0; j < inputs.domains.length; j++) {
+      var d2 = inputs.domains[j];
+      var rd = scanResults.domains[d2];
+      if (rd && rd.ageDays !== undefined) continue;
+      var rid = 'rdap_' + j;
+      addLog(rid, 'RDAP: domain age — ' + d2);
+      try {
+        var dateStr = await rdapAge(d2);
+        if (!scanResults.domains[d2]) scanResults.domains[d2] = {};
+        if (dateStr) {
+          var ageDaysRdap = domainAge(dateStr);
+          scanResults.domains[d2].ageDays = ageDaysRdap;
+          scanResults.domains[d2].rdapDate = dateStr;
+          if (ageDaysRdap !== null && ageDaysRdap < 7) score += 40;
+          else if (ageDaysRdap !== null && ageDaysRdap < 30) score += 20;
+          setLog(rid, 'done', 'RDAP: ' + d2 + ' — registered ' + ageDaysRdap + ' days ago');
+        } else {
+          setLog(rid, 'skip', 'RDAP: ' + d2 + ' — no registration data');
+        }
+      } catch(e) { setLog(rid, 'skip', 'RDAP: ' + d2 + ' — unavailable'); }
+    }
+
+    // VT URL checks
+    for (var k = 0; k < inputs.urls.length; k++) {
+      var rawUrl = inputs.urls[k];
+      var cleanUrl = refang(rawUrl);
+      var ulid = 'url_' + k;
+      addLog(ulid, 'VirusTotal: URL reputation — ' + rawUrl.substring(0, 50));
+      if (!vtKey) { setLog(ulid, 'skip', 'Skipped (no VT key): URL ' + (k+1)); scanResults.urls[rawUrl] = null; continue; }
+      try {
+        await sleep(k > 0 ? 16000 : 0);
+        var ures = await vtUrl(cleanUrl, vtKey);
+        scanResults.urls[rawUrl] = ures;
+        if (ures) {
+          score += scoreFromStats(ures);
+          setLog(ulid, 'done', 'VT URL: ' + (ures.malicious > 0 ? ures.malicious + ' malicious engines' : 'clean'));
+        } else {
+          setLog(ulid, 'done', 'VT URL: not in database');
+        }
+      } catch(e) { setLog(ulid, 'err', 'VT URL failed (' + e.message + ')'); scanResults.urls[rawUrl] = null; }
+    }
+
+    // URLScan
+    if (urlscanKey && inputs.urls.length) {
+      var firstUrl = refang(inputs.urls[0]);
+      addLog('urlscan', 'URLScan.io: submitting — ' + firstUrl.substring(0, 50));
+      var uuid = await urlscanSubmit(firstUrl, urlscanKey);
+      if (uuid) {
+        setLog('urlscan', 'running', 'URLScan.io: scan in progress, waiting for result...');
+        var usResult = await urlscanResult(uuid);
+        if (usResult) {
+          scanResults.urlscans[firstUrl] = usResult;
+          var uov = usResult.verdicts && usResult.verdicts.overall;
+          if (uov && uov.malicious) score += 30;
+          setLog('urlscan', 'done', 'URLScan: ' + (uov ? (uov.malicious ? 'MALICIOUS' : 'clean') : 'complete') + ' — ' + (usResult.resultURL || ''));
+        } else {
+          setLog('urlscan', 'skip', 'URLScan result not ready in time — check manually');
+        }
+      } else {
+        setLog('urlscan', 'err', 'URLScan submission failed');
+      }
+    }
+
+    // VT IP check
+    if (inputs.origIp) {
+      addLog('ip', 'VirusTotal: IP lookup — ' + inputs.origIp);
+      if (!vtKey) { setLog('ip', 'skip', 'Skipped (no VT key): IP lookup'); scanResults.ips[inputs.origIp] = null; }
+      else {
+        try {
+          await sleep(16000);
+          var ipres = await vtIp(inputs.origIp, vtKey);
+          scanResults.ips[inputs.origIp] = ipres;
+          if (ipres) {
+            score += Math.min(25, (ipres.malicious || 0) * 3);
+            setLog('ip', 'done', 'VT IP: ' + (ipres.malicious > 0 ? ipres.malicious + ' malicious' : 'clean') + (ipres.country ? ' · ' + ipres.country : ''));
+          } else { setLog('ip', 'done', 'VT IP: no data'); }
+        } catch(e) { setLog('ip', 'err', 'VT IP failed (' + e.message + ')'); }
+      }
+    }
+
+    // VT hash check
+    if (inputs.hash) {
+      addLog('hash', 'VirusTotal: file hash — ' + inputs.hash.substring(0, 16) + '...');
+      if (!vtKey) { setLog('hash', 'skip', 'Skipped (no VT key): hash lookup'); scanResults.hash = null; }
+      else {
+        try {
+          await sleep(16000);
+          var hres = await vtHash(inputs.hash, vtKey);
+          scanResults.hash = hres;
+          if (hres) {
+            if (hres.malicious > 0) score += 60;
+            setLog('hash', 'done', 'VT hash: ' + (hres.malicious > 0 ? 'MALICIOUS — ' + hres.malicious + ' engines' : 'clean') + (hres.type ? ' · ' + hres.type : ''));
+          } else { setLog('hash', 'done', 'VT hash: not in database (undetected or unknown)'); }
+        } catch(e) { setLog('hash', 'err', 'VT hash failed (' + e.message + ')'); }
+      }
+    }
+
+    addLog('build', 'Building investigation report...');
+    score = Math.min(100, score);
+    await sleep(400);
+    setLog('build', 'done', 'Report ready. Risk score: ' + score + '/100');
+    await sleep(300);
+
+    renderResults(inputs, score);
+  }
+
+  // ── RENDER RESULTS ──────────────────────────────────────────────────────────
+  function renderResults(inputs, score) {
+    document.getElementById('progressPanel').style.display = 'none';
+    document.getElementById('resultsPanel').style.display = 'block';
+
+    var vLabel = verdictLabel(score);
+    var vClass = verdictClass(score);
+
+    // Count flagged IOCs
+    var flaggedDomains = Object.values(scanResults.domains).filter(function(d){ return d && (d.malicious > 0 || d.suspicious > 0); }).length;
+    var flaggedUrls = Object.values(scanResults.urls).filter(function(u){ return u && (u.malicious > 0 || u.suspicious > 0); }).length;
+    var flaggedHash = scanResults.hash && scanResults.hash.malicious > 0;
+
+    // Verdict banner
+    var authFail = (inputs.spf && inputs.spf !== 'pass') || (inputs.dkim && inputs.dkim !== 'pass') || (inputs.dmarc && inputs.dmarc !== 'pass');
+    var vBanner = '<div class="verdict-row"><div class="verdict-label">' + vLabel + '</div><div class="verdict-score">Risk Score: <span>' + score + '</span>/100</div></div>';
+    vBanner += '<div class="verdict-stats">';
+    if (flaggedDomains > 0) vBanner += '<div class="vstat flagged">' + flaggedDomains + ' DOMAIN(S) FLAGGED</div>';
+    else vBanner += '<div class="vstat clean">DOMAINS CLEAN</div>';
+    if (flaggedUrls > 0) vBanner += '<div class="vstat flagged">' + flaggedUrls + ' URL(S) FLAGGED</div>';
+    else if (inputs.urls.length > 0) vBanner += '<div class="vstat clean">URLS CLEAN</div>';
+    if (flaggedHash) vBanner += '<div class="vstat flagged">HASH MALICIOUS</div>';
+    else if (inputs.hash) vBanner += '<div class="vstat clean">HASH CLEAN</div>';
+    if (authFail) vBanner += '<div class="vstat flagged">AUTH FAILURES</div>';
+    vBanner += '</div>';
+
+    var vEl = document.getElementById('verdictBanner');
+    vEl.innerHTML = vBanner;
+    vEl.className = 'verdict-banner ' + vClass;
+
+    // IOC Cards
+    var cards = '';
+
+    // Sender
+    if (inputs.sender) {
+      var senderDom = inputs.sender.includes('@') ? inputs.sender.split('@')[1] : null;
+      var sRes = senderDom ? (scanResults.domains[senderDom] || null) : null;
+      cards += '<div class="ioc-card"><div class="ioc-card-header"><div><div class="ioc-card-label">SENDER DOMAIN</div><div class="ioc-card-value">' + esc(inputs.sender) + '</div></div>' + iocBadge(sRes) + '</div>';
+      if (sRes) {
+        var ageInfo = sRes.ageDays !== undefined ? (sRes.ageDays + ' days old') : (sRes.rdapDate ? sRes.rdapDate.split('T')[0] : null);
+        cards += '<div class="ioc-card-details">';
+        cards += '<span class="ioc-detail' + (sRes.malicious > 0 ? ' highlight' : '') + '">' + (sRes.malicious + sRes.suspicious) + '/' + sRes.total + ' engines</span>';
+        if (ageInfo) cards += '<span class="ioc-detail' + (sRes.ageDays !== undefined && sRes.ageDays < 30 ? ' highlight' : '') + '">Age: ' + esc(ageInfo) + '</span>';
+        cards += '</div>';
+      }
+      if (inputs.replyTo && inputs.replyTo !== inputs.sender) cards += '<div class="ioc-card-details"><span class="ioc-detail highlight">Reply-To mismatch: ' + esc(inputs.replyTo) + '</span></div>';
+      if (inputs.returnPath && inputs.returnPath !== inputs.sender) cards += '<div class="ioc-card-details"><span class="ioc-detail highlight">Return-Path mismatch: ' + esc(inputs.returnPath) + '</span></div>';
+      cards += '</div>';
+    }
+
+    // Domains from URLs
+    inputs.domains.forEach(function(d) {
+      if (inputs.sender && inputs.sender.includes('@') && inputs.sender.split('@')[1] === d) return;
+      var dr = scanResults.domains[d];
+      cards += '<div class="ioc-card"><div class="ioc-card-header"><div><div class="ioc-card-label">DOMAIN</div><div class="ioc-card-value">' + esc(d) + '</div></div>' + iocBadge(dr) + '</div>';
+      if (dr) {
+        var ageInfo2 = dr.ageDays !== undefined ? (dr.ageDays + ' days old') : null;
+        cards += '<div class="ioc-card-details">';
+        cards += '<span class="ioc-detail' + (dr.malicious > 0 ? ' highlight' : '') + '">' + (dr.malicious + dr.suspicious) + '/' + dr.total + ' engines</span>';
+        if (ageInfo2) cards += '<span class="ioc-detail' + (dr.ageDays < 30 ? ' highlight' : '') + '">Age: ' + esc(ageInfo2) + '</span>';
+        cards += '</div>';
+      }
+      cards += '</div>';
+    });
+
+    // URLs
+    inputs.urls.forEach(function(u) {
+      var ur = scanResults.urls[u];
+      cards += '<div class="ioc-card"><div class="ioc-card-header"><div><div class="ioc-card-label">URL</div><div class="ioc-card-value">' + esc(u) + '</div></div>' + iocBadge(ur) + '</div>';
+      if (ur && (ur.malicious + ur.suspicious) > 0) {
+        cards += '<div class="ioc-card-details"><span class="ioc-detail highlight">' + (ur.malicious + ur.suspicious) + '/' + ur.total + ' engines flagged</span></div>';
+      }
+      // URLScan result
+      var usKey = refang(u);
+      var usRes = scanResults.urlscans[usKey];
+      if (usRes) {
+        var uov = usRes.verdicts && usRes.verdicts.overall;
+        cards += '<div class="ioc-card-details"><span class="ioc-detail' + (uov && uov.malicious ? ' highlight' : '') + '">URLScan: ' + (uov ? (uov.malicious ? 'malicious' : 'clean') : 'complete') + '</span>';
+        if (usRes.resultURL) cards += '<a class="quick-btn" href="' + esc(usRes.resultURL) + '" target="_blank" rel="noopener" style="font-size:0.5rem;padding:1px 8px;">VIEW SCAN ↗</a>';
+        cards += '</div>';
+      }
+      cards += '</div>';
+    });
+
+    // IP
+    if (inputs.origIp) {
+      var ir = scanResults.ips[inputs.origIp];
+      cards += '<div class="ioc-card"><div class="ioc-card-header"><div><div class="ioc-card-label">X-ORIGINATING-IP</div><div class="ioc-card-value">' + esc(inputs.origIp) + '</div></div>' + iocBadge(ir) + '</div>';
+      if (ir) {
+        cards += '<div class="ioc-card-details">';
+        if (ir.country) cards += '<span class="ioc-detail">Country: ' + esc(ir.country) + '</span>';
+        if (ir.as_owner) cards += '<span class="ioc-detail">ASN: ' + esc(ir.as_owner) + '</span>';
+        if (ir.malicious > 0) cards += '<span class="ioc-detail highlight">' + ir.malicious + '/' + ir.total + ' engines</span>';
+        cards += '</div>';
+      }
+      cards += '</div>';
+    }
+
+    // Hash
+    if (inputs.hash) {
+      var hr = scanResults.hash;
+      cards += '<div class="ioc-card"><div class="ioc-card-header"><div><div class="ioc-card-label">FILE HASH</div><div class="ioc-card-value" style="font-size:0.6rem">' + esc(inputs.hash) + '</div></div>' + iocBadge(hr) + '</div>';
+      if (hr) {
+        cards += '<div class="ioc-card-details">';
+        if (hr.type) cards += '<span class="ioc-detail">Type: ' + esc(hr.type) + '</span>';
+        if (hr.name) cards += '<span class="ioc-detail">Name: ' + esc(hr.name) + '</span>';
+        if (hr.malicious > 0) cards += '<span class="ioc-detail highlight">' + hr.malicious + '/' + hr.total + ' detections</span>';
+        cards += '</div>';
+      }
+      cards += '</div>';
+    }
+
+    document.getElementById('iocCards').innerHTML = cards || '<div style="font-family:\'Share Tech Mono\',monospace;font-size:0.6rem;color:var(--muted)">No IOCs provided.</div>';
+
+    // Quick launch
+    var qr = '';
+    if (inputs.urls.length) {
+      var firstRefanged = encodeURIComponent(refang(inputs.urls[0]));
+      qr += '<a class="quick-btn" href="https://urlscan.io/search/#page.url:' + firstRefanged + '" target="_blank" rel="noopener">&#8599; URLScan.io</a>';
+      qr += '<a class="quick-btn" href="https://urlhaus.abuse.ch/browse.php?search=' + encodeURIComponent(extractDomain(inputs.urls[0]) || '') + '" target="_blank" rel="noopener">&#8599; URLhaus</a>';
+    }
+    if (inputs.origIp) {
+      qr += '<a class="quick-btn" href="https://www.abuseipdb.com/check/' + encodeURIComponent(inputs.origIp) + '" target="_blank" rel="noopener">&#8599; AbuseIPDB</a>';
+      qr += '<a class="quick-btn" href="https://www.shodan.io/host/' + encodeURIComponent(inputs.origIp) + '" target="_blank" rel="noopener">&#8599; Shodan</a>';
+    }
+    if (inputs.domains.length) {
+      qr += '<a class="quick-btn" href="https://whois.domaintools.com/' + encodeURIComponent(inputs.domains[0]) + '" target="_blank" rel="noopener">&#8599; WHOIS</a>';
+    }
+    qr += '<a class="quick-btn" href="https://mxtoolbox.com/EmailHeaders.aspx" target="_blank" rel="noopener">&#8599; MXToolbox Headers</a>';
+    document.getElementById('quickRow').innerHTML = qr;
+
+    // Header summary
+    function authTag(val, field) {
+      if (!val) return '<span class="ioc-detail">'+field+': not provided</span>';
+      var ok = val === 'pass';
+      return '<span class="ioc-detail' + (!ok ? ' highlight' : '') + '">' + field + ': ' + val.toUpperCase() + '</span>';
+    }
+    var hsum = '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem;">';
+    hsum += authTag(inputs.spf, 'SPF') + authTag(inputs.dkim, 'DKIM') + authTag(inputs.dmarc, 'DMARC');
+    if (inputs.origIp) hsum += '<span class="ioc-detail">Origin IP: ' + esc(inputs.origIp) + '</span>';
+    hsum += '</div>';
+    if (authFail) {
+      hsum += '<div style="background:var(--warn-dim);border:1px solid rgba(245,158,11,0.3);border-radius:4px;padding:8px 12px;font-family:\'Exo 2\',sans-serif;font-size:0.67rem;color:var(--warn);">One or more auth checks failed. Combined with a lookalike sender domain, this meets escalation criteria.</div>';
+    }
+    document.getElementById('headerSummary').innerHTML = hsum;
+
+    // Full checklist
+    renderFullChecklist(inputs);
+
+    // Steps narrative
+    renderStepsNarrative(inputs, score, flaggedDomains, flaggedUrls, flaggedHash, authFail);
+
+    document.getElementById('resultsPanel').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // ── FULL CHECKLIST ──────────────────────────────────────────────────────────
+  function renderFullChecklist(inputs) {
+    var authFilled = inputs.spf && inputs.dkim && inputs.dmarc;
+    var vtRan = !!loadSettings().vtKey;
+    var rdapRan = true;
+    var senderMismatch = (inputs.sender && inputs.replyTo && inputs.sender !== inputs.replyTo) ||
+                         (inputs.sender && inputs.returnPath && inputs.sender !== inputs.returnPath);
+
+    var STEPS_CL = [
+      { num:'01', name:'TRIAGE', items:[
+        { text:'Raw email (EML/MSG) obtained', auto: !!inputs.sender, note: inputs.sender ? 'Sender metadata provided via form' : null },
+        { text:'Sender / Reply-To / Return-Path mismatch noted', auto: !!inputs.sender, note: senderMismatch ? 'MISMATCH DETECTED — see IOC Analysis' : 'No mismatch detected' },
+        { text:'Internal vs external origin confirmed', auto: false, manual: true, note: 'Verify from email gateway logs' },
+        { text:'Recipients identified and logged', auto: !!inputs.recipients, note: inputs.recipients || null },
+      ]},
+      { num:'02', name:'HEADERS', items:[
+        { text:'Received chain traced hop-by-hop', auto: false, manual: true, note: 'Manual — paste raw headers into MXToolbox' },
+        { text:'SPF / DKIM / DMARC result captured', auto: authFilled, note: authFilled ? ('SPF: '+(inputs.spf||'-')+' · DKIM: '+(inputs.dkim||'-')+' · DMARC: '+(inputs.dmarc||'-')) : 'Fill in auth fields and rescan' },
+        { text:'X-Originating-IP cross-checked against threat intel', auto: vtRan && !!inputs.origIp, note: inputs.origIp ? (vtRan ? 'VT lookup completed — see IOC Analysis' : 'Provide VT key to auto-check') : 'No IP provided' },
+        { text:'Message-ID format reviewed for anomalies', auto: false, manual: true, note: 'Manual — check raw headers' },
+        { text:'Unexpected relay IPs or countries flagged', auto: false, manual: true, note: 'Manual — trace Received chain' },
+      ]},
+      { num:'03', name:'URL TRIAGE', items:[
+        { text:'All URLs extracted (including encoded / obfuscated)', auto: inputs.urls.length > 0, note: inputs.urls.length + ' URL(s) provided' },
+        { text:'URLs defanged before sharing', auto: true, note: 'Auto — tool handles refanging internally' },
+        { text:'Redirect chains checked via URLScan (no direct visit)', auto: !!loadSettings().urlscanKey && inputs.urls.length > 0, note: loadSettings().urlscanKey ? 'URLScan.io scan submitted' : 'Add URLScan key to enable · use quick-launch link' },
+        { text:'Domain age checked via WHOIS / RDAP', auto: rdapRan && inputs.domains.length > 0, note: inputs.domains.length > 0 ? 'RDAP checked — see IOC Analysis for age' : 'No domains to check' },
+        { text:'Typosquatting / lookalike compared to legit sender domain', auto: false, manual: true, note: 'Manual — use dnstwist or visual comparison' },
+        { text:'URL destination type noted: login page / file / redirect', auto: false, manual: true, note: 'Manual — check URLScan result screenshot' },
+      ]},
+      { num:'04', name:'ATTACHMENT', items:[
+        { text:'File hash checked on VirusTotal before detonation', auto: vtRan && !!inputs.hash, note: inputs.hash ? (vtRan ? 'VT hash lookup completed — see IOC Analysis' : 'Provide VT key') : 'No hash provided' },
+        { text:'File type and macro / script risk assessed', auto: false, manual: true, note: 'Manual — document file type' },
+        { text:'Detonated in isolated sandbox', auto: false, manual: true, note: 'Manual — use Any.run / Hybrid Analysis / Joe Sandbox' },
+        { text:'Process creation events reviewed', auto: false, manual: true, note: 'Manual — from sandbox report' },
+        { text:'Network callbacks and C2 IPs extracted', auto: false, manual: true, note: 'Manual — from sandbox report' },
+        { text:'All attachment IOCs documented', auto: !!inputs.hash, note: inputs.hash ? 'Hash logged in IOC Analysis' : 'Manual — document after sandbox' },
+      ]},
+      { num:'05', name:'IDENTITY', items:[
+        { text:'Email gateway logs checked for click / open', auto: false, manual: true, note: 'Manual — check Proofpoint / gateway telemetry' },
+        { text:'Endpoint telemetry reviewed for affected user', auto: false, manual: true, note: 'Manual — check CrowdStrike / EDR' },
+        { text:'Okta logs pulled for ±2 hour window', auto: false, manual: true, note: 'Manual — Okta System Log, filter by ' + (inputs.user || 'affected user') },
+        { text:'New device / impossible travel events reviewed', auto: false, manual: true, note: 'Manual — Okta auth events' },
+        { text:'MFA bypass or downgrade attempts checked', auto: false, manual: true, note: 'Manual — Okta policy evaluation logs' },
+        { text:'Session token theft indicators checked', auto: false, manual: true, note: 'Manual — new geo/ASN sessions post-auth' },
+        { text:'Proxy logs checked for credential submission', auto: false, manual: true, note: 'Manual — network proxy / Zscaler logs' },
+      ]},
+      { num:'06', name:'CONTAINMENT', items:[
+        { text:'Sender domain / IP blocked at email gateway', auto: false, manual: true, note: 'Manual action required — analyst approval' },
+        { text:'Delivered emails recalled / retracted', auto: false, manual: true, note: 'Manual action required' },
+        { text:'Malicious URLs / domains blocked at proxy and DNS', auto: false, manual: true, note: 'Manual action required' },
+        { text:'File hash blocked at endpoint', auto: false, manual: true, note: 'Manual action required — CrowdStrike or equivalent' },
+        { text:'Okta session suspended / tokens revoked (if applicable)', auto: false, manual: true, note: 'Manual action required — pending identity assessment' },
+        { text:'All evidence exported and preserved', auto: false, manual: true, note: 'Manual — EML, sandbox report, header analysis, Okta export' },
+        { text:'All IOCs documented before blocking', auto: true, note: 'Auto — IOC report generated above' },
+      ]},
+      { num:'07', name:'CLOSURE', items:[
+        { text:'All IOCs blocked', auto: false, manual: true, note: 'Manual — confirm all blocking actions completed' },
+        { text:'Impacted users notified and remediated', auto: false, manual: true, note: inputs.user ? 'Affected user: ' + inputs.user : 'Manual' },
+        { text:'Ticket root cause and disposition documented', auto: false, manual: true, note: 'Manual — complete after full investigation' },
+        { text:'IOCs documented in structured format for downstream TI', auto: true, note: 'Auto — use Export button above' },
+        { text:'IR team notified if escalated', auto: false, manual: true, note: 'Manual — based on identity assessment outcome' },
+      ]},
+    ];
+
+    var html = '';
+    STEPS_CL.forEach(function(step) {
+      var autoCount = step.items.filter(function(i){ return i.auto; }).length;
+      var total = step.items.length;
+      html += '<div class="cl-step">';
+      html += '<div class="cl-step-header" onclick="toggleCLStep(this)">';
+      html += '<div class="cl-step-num">' + step.num + '</div>';
+      html += '<div class="cl-step-name">' + step.name + '</div>';
+      html += '<div class="cl-step-progress">' + autoCount + '/' + total + ' verified</div>';
+      html += '<div class="cl-step-toggle">&#9660;</div></div>';
+      html += '<div class="cl-items">';
+      step.items.forEach(function(item) {
+        var iconCls, iconChar;
+        if (item.auto) { iconCls = 'cl-auto'; iconChar = '&#10003;'; }
+        else { iconCls = 'cl-manual'; iconChar = '&#9633;'; }
+        html += '<div class="cl-item"><div class="cl-icon ' + iconCls + '">' + iconChar + '</div>';
+        html += '<div><div class="cl-item-text">' + esc(item.text) + '<span class="cl-tag ' + (item.auto ? 'cl-tag-auto' : 'cl-tag-manual') + '">' + (item.auto ? 'AUTO' : 'MANUAL') + '</span></div>';
+        if (item.note) html += '<div class="cl-item-note">' + esc(item.note) + '</div>';
+        html += '</div></div>';
+      });
+      html += '</div></div>';
+    });
+    document.getElementById('checklistSteps').innerHTML = html;
+  }
+
+  function toggleCLStep(header) {
+    var items = header.nextElementSibling;
+    var tog = header.querySelector('.cl-step-toggle');
+    if (items.style.display === 'none') { items.style.display = 'flex'; tog.innerHTML = '&#9660;'; }
+    else { items.style.display = 'none'; tog.innerHTML = '&#9654;'; }
+  }
+
+  // ── STEPS NARRATIVE ─────────────────────────────────────────────────────────
+  function renderStepsNarrative(inputs, score, flaggedDomains, flaggedUrls, flaggedHash, authFail) {
+    var vtRan = !!loadSettings().vtKey;
+    var senderMismatch = (inputs.sender && inputs.replyTo && inputs.sender !== inputs.replyTo);
+
+    var notes = [
+      { num:'01', title:'Triage', text: inputs.sender ? ('Alert triaged. Sender: ' + inputs.sender + (inputs.subject ? ' · Subject: "' + inputs.subject + '"' : '') + (senderMismatch ? ' · Reply-To mismatch detected.' : '.')) : 'No sender metadata provided.' },
+      { num:'02', title:'Header Analysis', text: authFail ? ('Auth failures detected: SPF=' + (inputs.spf||'—') + ', DKIM=' + (inputs.dkim||'—') + ', DMARC=' + (inputs.dmarc||'—') + (inputs.origIp ? ' · Origin IP ' + inputs.origIp + ' checked.' : '') + ' Escalation criteria may be met.') : ('Auth results: SPF=' + (inputs.spf||'not checked') + ', DKIM=' + (inputs.dkim||'not checked') + ', DMARC=' + (inputs.dmarc||'not checked') + '. No failures detected.') },
+      { num:'03', title:'URL / Domain Triage', text: inputs.urls.length > 0 ? (inputs.urls.length + ' URL(s) analyzed. ' + (vtRan ? flaggedUrls + ' flagged by VirusTotal. ' : 'VT key not set — skip VT check. ') + inputs.domains.length + ' unique domain(s) checked via RDAP for registration age.') : 'No URLs provided for analysis.' },
+      { num:'04', title:'Attachment Sandbox', text: inputs.hash ? (vtRan ? ('Hash ' + inputs.hash.substring(0,12) + '... checked via VirusTotal. ' + (flaggedHash ? 'MALICIOUS — sandbox detonation confirmed required.' : 'Clean on VT. Sandbox detonation still recommended if attachment is present.')) : 'Hash provided but VT key not set — manual VT check required.') : 'No file hash provided. If attachment present, extract hash and rescan.' },
+      { num:'05', title:'Identity / Okta Impact', text: inputs.user ? ('Affected user: ' + inputs.user + '. Okta log pull required for ±2hr window. Check for new device, impossible travel, MFA bypass, session anomalies.') : 'No affected user provided. Pull Okta logs for all email recipients.' },
+      { num:'06', title:'Containment', text: 'Containment actions require analyst approval and are not automated. Use the checklist above as your action list. Ensure all IOCs are documented before any blocking.' },
+      { num:'07', title:'Closure', text: 'Complete the identity assessment and containment steps, then document root cause, disposition, and affected user count in your ticket. Export this report for downstream TI.' },
+    ];
+
+    document.getElementById('stepsNarrative').innerHTML = notes.map(function(n) {
+      return '<div class="step-note"><div class="step-note-num">' + n.num + '</div><div class="step-note-body"><div class="step-note-title">' + esc(n.title) + '</div><div class="step-note-text">' + esc(n.text) + '</div></div></div>';
+    }).join('');
+  }
+
+  // ── EXPORT ───────────────────────────────────────────────────────────────────
+  function exportReport() {
+    var inputs = scanResults.inputs;
+    if (!inputs) return;
+    var lines = ['# PHISHOPS AUTO SCAN REPORT', 'Generated: ' + new Date().toISOString().replace('T',' ').split('.')[0], ''];
+
+    lines.push('## VERDICT');
+    var score = parseInt(document.querySelector('.verdict-label') ? 0 : 0);
+    var vlabel = document.querySelector('.verdict-label');
+    lines.push('Risk: ' + (vlabel ? vlabel.textContent : 'see report'));
+    lines.push('');
+
+    lines.push('## EMAIL METADATA');
+    if (inputs.sender) lines.push('- Sender: ' + inputs.sender);
+    if (inputs.replyTo) lines.push('- Reply-To: ' + inputs.replyTo);
+    if (inputs.returnPath) lines.push('- Return-Path: ' + inputs.returnPath);
+    if (inputs.recipients) lines.push('- Recipients: ' + inputs.recipients);
+    if (inputs.subject) lines.push('- Subject: ' + inputs.subject);
+    lines.push('');
+
+    lines.push('## HEADER AUTH');
+    if (inputs.spf) lines.push('- SPF: ' + inputs.spf.toUpperCase());
+    if (inputs.dkim) lines.push('- DKIM: ' + inputs.dkim.toUpperCase());
+    if (inputs.dmarc) lines.push('- DMARC: ' + inputs.dmarc.toUpperCase());
+    if (inputs.origIp) lines.push('- X-Originating-IP: ' + inputs.origIp);
+    lines.push('');
+
+    lines.push('## IOC ENRICHMENT');
+    Object.keys(scanResults.domains).forEach(function(d) {
+      var r = scanResults.domains[d];
+      lines.push('Domain: ' + d + (r ? ' — ' + (r.malicious > 0 ? 'MALICIOUS (' + r.malicious + ' engines)' : 'clean') + (r.ageDays !== undefined ? ', age: ' + r.ageDays + 'd' : '') : ' — no data'));
+    });
+    inputs.urls.forEach(function(u) {
+      var r = scanResults.urls[u];
+      lines.push('URL: ' + u + (r ? ' — ' + (r.malicious > 0 ? 'MALICIOUS (' + r.malicious + ' engines)' : 'clean') : ' — no data'));
+    });
+    if (inputs.origIp) {
+      var ir = scanResults.ips[inputs.origIp];
+      lines.push('IP: ' + inputs.origIp + (ir ? ' — ' + (ir.malicious > 0 ? 'MALICIOUS (' + ir.malicious + ')' : 'clean') + (ir.country ? ', ' + ir.country : '') : ' — no data'));
+    }
+    if (inputs.hash) {
+      var hr = scanResults.hash;
+      lines.push('Hash: ' + inputs.hash + (hr ? ' — ' + (hr.malicious > 0 ? 'MALICIOUS (' + hr.malicious + ' detections)' : 'clean') : ' — not in VT database'));
+    }
+    lines.push('');
+
+    lines.push('## MANUAL ACTIONS REQUIRED');
+    lines.push('- [ ] Header relay chain traced');
+    lines.push('- [ ] Attachment detonated in sandbox (if present)');
+    lines.push('- [ ] Okta logs pulled for affected user (±2hr window)');
+    lines.push('- [ ] Containment actions executed (block/revoke/recall)');
+    lines.push('- [ ] Ticket closed with root cause and disposition');
+
+    navigator.clipboard.writeText(lines.join('\n')).then(function() {
+      var btns = document.querySelectorAll('.btn-export-primary');
+      btns.forEach(function(b) { b.textContent = 'COPIED ✓'; setTimeout(function(){ b.textContent = 'COPY FULL REPORT'; }, 2000); });
+    });
+  }
+
+  function resetScan() {
+    logEntries = [];
+    scanResults = {};
+    document.getElementById('inputPanel').style.display = 'block';
+    document.getElementById('progressPanel').style.display = 'none';
+    document.getElementById('resultsPanel').style.display = 'none';
+    window.scrollTo(0,0);
+  }
+
+  // ── NAV / THEME ───────────────────────────────────────────────────────────────
+  function toggleDrawer(){ document.getElementById('navDrawer').classList.toggle('open'); }
+  function closeDrawer(){ document.getElementById('navDrawer').classList.remove('open'); }
+  document.addEventListener('click', function(e){ var d=document.getElementById('navDrawer'),h=document.getElementById('hamburger'); if(d.classList.contains('open')&&!d.contains(e.target)&&!h.contains(e.target)) closeDrawer(); });
+
+  function updateLogo(t){ var el=document.getElementById('navLogo'); if(el) el.src=t==='light'?'https://raw.githubusercontent.com/h3ad-sec/h3ad-sec.github.io/main/logo-light.png':'https://raw.githubusercontent.com/h3ad-sec/h3ad-sec.github.io/main/logo-dark.png'; }
+  function toggleTheme(){ var l=document.body.classList.toggle('light'); document.body.classList.toggle('dark',!l); var t=l?'light':'dark'; localStorage.setItem('h3ad-theme',t); updateLogo(t); }
+  (function(){ var t=localStorage.getItem('h3ad-theme'); if(t==='light'){document.body.classList.add('light');document.body.classList.remove('dark');updateLogo('light');}else{document.body.classList.add('dark');document.body.classList.remove('light');} })();
+  (function(){var pill=document.querySelector('.xv-nav-pill'),links=document.querySelector('.nav-links'),toggle=document.querySelector('.theme-toggle'),G=20;function check(){if(!links)return;document.body.classList.remove('nav-compact');links.style.visibility='hidden';var lr=links.getBoundingClientRect(),pr=pill?pill.getBoundingClientRect().right:60,tl=toggle?toggle.getBoundingClientRect().left:window.innerWidth-60;links.style.visibility='';document.body.classList.toggle('nav-compact',(pr+G>lr.left)||(lr.right+G>tl));}check();window.addEventListener('resize',check);})();
+
+  checkKeyState();
+  </script>
+</body>
+</html>

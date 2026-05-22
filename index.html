@@ -90,10 +90,10 @@
     #scroll-sentinel{position:absolute;top:0;left:0;width:1px;height:10px;pointer-events:none;}
 
     /* APP LAYOUT */
-    .app-shell{position:relative;z-index:1;display:grid;grid-template-columns:200px 1fr 230px;min-height:calc(100vh - var(--nav-h));margin-top:var(--nav-h);}
+    .app-shell{position:relative;z-index:1;display:grid;grid-template-columns:200px 1fr 230px;min-height:calc(100vh - var(--nav-h) - 36px);margin-top:calc(var(--nav-h) + 36px);}
 
     /* STEP SIDEBAR */
-    .step-sidebar{border-right:1px solid var(--border);background:var(--panel);padding:1.5rem 0;position:sticky;top:var(--nav-h);height:calc(100vh - var(--nav-h));overflow-y:auto;}
+    .step-sidebar{border-right:1px solid var(--border);background:var(--panel);padding:1.5rem 0;position:sticky;top:calc(var(--nav-h) + 36px);height:calc(100vh - var(--nav-h) - 36px);overflow-y:auto;}
     .sidebar-label{font-family:'Share Tech Mono',monospace;font-size:0.52rem;letter-spacing:0.22em;color:var(--muted);text-transform:uppercase;padding:0 1.2rem;margin-bottom:0.75rem;}
     .step-item{display:flex;align-items:center;gap:10px;padding:9px 1.2rem;cursor:pointer;border-left:2px solid transparent;transition:0.15s;position:relative;}
     .step-item:hover{background:var(--primary-dim);border-left-color:var(--muted-dim);}
@@ -174,7 +174,7 @@
     .btn-prev:disabled,.btn-next:disabled{opacity:0.3;cursor:default;}
 
     /* IOC RAIL */
-    .ioc-rail{border-left:1px solid var(--border);background:var(--panel);padding:1.5rem 0;position:sticky;top:var(--nav-h);height:calc(100vh - var(--nav-h));overflow-y:auto;display:flex;flex-direction:column;}
+    .ioc-rail{border-left:1px solid var(--border);background:var(--panel);padding:1.5rem 0;position:sticky;top:calc(var(--nav-h) + 36px);height:calc(100vh - var(--nav-h) - 36px);overflow-y:auto;display:flex;flex-direction:column;}
     .ioc-header{padding:0 1rem;margin-bottom:1rem;}
     .ioc-title{font-family:'Share Tech Mono',monospace;font-size:0.56rem;letter-spacing:0.22em;color:var(--accent);text-transform:uppercase;margin-bottom:6px;}
     .ioc-count-bar{font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--muted);letter-spacing:0.06em;}
@@ -325,6 +325,13 @@
     <a href="https://h3ad-sec.github.io/H3AD-DF/" target="_blank" rel="noopener" onclick="closeDrawer()">H3AD-DF ↗</a>
     <a href="https://h3ad-sec.github.io/H3AD-IR/" target="_blank" rel="noopener" onclick="closeDrawer()">H3AD-IR ↗</a>
     <a href="mailto:h3adsec@gmail.com" onclick="closeDrawer()">CONTACT</a>
+  </div>
+
+  <!-- MODE BAR -->
+  <div style="position:fixed;top:48px;left:0;right:0;z-index:90;background:var(--panel);border-bottom:1px solid var(--border);height:36px;display:flex;align-items:center;padding:0 1.5rem;gap:4px;">
+    <a style="font-family:'Share Tech Mono',monospace;font-size:0.58rem;letter-spacing:0.16em;color:var(--accent);padding:4px 14px;border-radius:3px;border:1px solid var(--accent);background:var(--primary-dim);text-decoration:none;">MANUAL TRACKER</a>
+    <div style="width:1px;height:14px;background:var(--border);margin:0 4px;"></div>
+    <a href="./auto.html" style="font-family:'Share Tech Mono',monospace;font-size:0.58rem;letter-spacing:0.16em;color:var(--muted);padding:4px 14px;border-radius:3px;border:1px solid transparent;text-decoration:none;transition:0.15s;">AUTO SCAN</a>
   </div>
 
   <!-- PROGRESS BAR -->
