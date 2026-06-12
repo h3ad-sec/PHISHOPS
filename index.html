@@ -455,7 +455,8 @@
     </div>
   </div>
 
-  <footer class="po-footer">H3AD-SEC &middot; PHISHOPS &middot; PHISHING INVESTIGATION TRACKER</footer>
+  <footer class="po-footer">H3AD-SEC &middot; PHISHOPS &middot; PHISHING INVESTIGATION TRACKER    <span class="footer-sep">&nbsp;//&nbsp;</span><span id="h3gc-n" style="font-family:'Share Tech Mono',monospace;opacity:.6;font-size:.8em"></span><span style="opacity:.35;font-size:.75em;margin-left:3px;letter-spacing:.08em">VIEWS</span>
+  </footer>
 
   <script>
     // ── STEPS DATA ──────────────────────────────────────────────────────────────
@@ -1014,6 +1015,28 @@
     }
 
     init();
+  </script>
+  <!-- h3gc-v2 -->
+  <script>
+    (function(){
+      var key = (location.pathname.replace(/\//g,'') || 'hub').toLowerCase();
+      var base = 'https://api.counterapi.dev/v1/h3ad-sec/' + key;
+      var lk = 'h3gc_c_' + key;
+      var sk = 'h3gc_s_' + key;
+      var el = document.getElementById('h3gc-n');
+      function store(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+      function session(k){try{return sessionStorage.getItem(k);}catch(e){return null;}}
+      function sessionSet(k,v){try{sessionStorage.setItem(k,v);}catch(e){}}
+      try{ var cached=localStorage.getItem(lk); if(el&&cached) el.textContent=Number(cached).toLocaleString(); }catch(e){}
+      var seen = session(sk);
+      if (!seen) sessionSet(sk,'1');
+      fetch(seen ? base + '/' : base + '/up')
+        .then(function(r){ if(!r.ok) throw r; return r.json(); })
+        .then(function(d){
+          if(d.count!=null){ store(lk,d.count); if(el) el.textContent=Number(d.count).toLocaleString(); }
+        })
+        .catch(function(){});
+    })();
   </script>
 </body>
 </html>
