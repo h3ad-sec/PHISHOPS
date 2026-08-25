@@ -140,6 +140,7 @@
     .ioc-card-label{font-family:'Share Tech Mono',monospace;font-size:0.58rem;letter-spacing:0.12em;color:var(--muted);}
     .ioc-card-value{font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--text);word-break:break-all;}
     .ioc-verdict-badge{font-family:'Share Tech Mono',monospace;font-size:0.52rem;letter-spacing:0.14em;padding:2px 8px;border-radius:2px;border:1px solid;white-space:nowrap;flex-shrink:0;}
+    .badge-error{color:var(--warn);border-color:rgba(245,158,11,0.35);background:var(--warn-dim);border-style:dashed;}
     .badge-malicious{color:var(--warn);border-color:rgba(245,158,11,0.35);background:var(--warn-dim);}
     .badge-suspicious{color:var(--accent2);border-color:rgba(88,166,255,0.3);background:rgba(88,166,255,0.08);}
     .badge-clean{color:var(--muted);border-color:var(--border);background:transparent;}
@@ -187,6 +188,8 @@
     .modal-title span{color:var(--accent);}
     .modal-desc{font-family:'Exo 2',sans-serif;font-size:0.67rem;color:var(--text-dim);margin-bottom:1.2rem;line-height:1.7;}
     .modal-fields{display:flex;flex-direction:column;gap:12px;margin-bottom:1.2rem;}
+    .key-import-row{display:flex;align-items:center;gap:10px;margin-bottom:1rem;flex-wrap:wrap;}
+    .key-import-msg{font-family:'Share Tech Mono',monospace;font-size:0.56rem;letter-spacing:0.04em;color:var(--muted);}
     .modal-actions{display:flex;gap:8px;justify-content:flex-end;}
     .field-group{display:flex;flex-direction:column;gap:5px;}
     .field-label{font-family:'Share Tech Mono',monospace;font-size:0.52rem;letter-spacing:0.18em;color:var(--muted);text-transform:uppercase;}
@@ -207,25 +210,57 @@
 
   <nav class="nav">
     <div class="hamburger" id="hamburger" onclick="toggleDrawer()"><span></span><span></span><span></span></div>
-    <a class="nav-brand" href="https://h3ad-sec.github.io" target="_blank" rel="noopener">
+    <a class="nav-brand" href="https://h3ad-sec.github.io">
       <img id="navLogo" src="https://raw.githubusercontent.com/h3ad-sec/h3ad-sec.github.io/main/logo-dark.png" alt="H3AD-SEC" />
     </a>
-    <a class="xv-nav-pill" href="https://h3ad-sec.github.io/PHISHOPS/" style="text-decoration:none">
+    <a class="xv-nav-pill" id="xv-nav-pill" href="https://h3ad-sec.github.io/PHISHOPS/" style="text-decoration:none">
       <span class="xv-pill-name"><span class="xv-pill-accent">PHISH</span><span class="xv-pill-text">OPS</span></span>
       <span class="xv-pill-tagline">Automated Phishing Analysis.</span>
     </a>
     <div class="nav-links">
       <div class="nav-divider"></div>
-      <a href="https://h3ad-sec.github.io" target="_blank" rel="noopener">HOME</a>
-      <a href="https://h3ad-sec.github.io/H3AD/" target="_blank" rel="noopener">H3AD</a>
+      <a href="https://h3ad-sec.github.io">HOME</a>
+      <a href="https://h3ad-sec.github.io/H3AD/">H3AD</a>
       <div class="nav-divider"></div>
-      <div class="nav-item"><a href="https://h3ad-sec.github.io/H3AD-X/" target="_blank" rel="noopener">H3AD-X</a><div class="nav-dropdown"><div class="nav-dropdown-inner"><a href="https://h3ad-sec.github.io/X-VERDIKT/" target="_blank" rel="noopener">X-VERDIKT</a><a href="https://h3ad-sec.github.io/PARSE-X/" target="_blank" rel="noopener">PARSE-X</a><a href="https://h3ad-sec.github.io/DNSCOPE/" target="_blank" rel="noopener">DNSCOPE</a></div></div></div>
-      <div class="nav-item"><a href="https://h3ad-sec.github.io/H3AD-AI/" target="_blank" rel="noopener">H3AD-AI</a><div class="nav-dropdown"><div class="nav-dropdown-inner"><a href="https://h3ad-sec.github.io/INSIGHT-AI/" target="_blank" rel="noopener">INSIGHT-AI</a><a href="https://h3ad-sec.github.io/QUERYCRAFT-AI/" target="_blank" rel="noopener">QUERYCRAFT-AI</a><a href="https://h3ad-sec.github.io/FPLENS-AI/" target="_blank" rel="noopener">FPLENS-AI</a><a href="https://h3ad-sec.github.io/ATTMAP-AI/" target="_blank" rel="noopener">ATTMAP-AI</a><a href="https://h3ad-sec.github.io/CHRONO-AI/" target="_blank" rel="noopener">CHRONO-AI</a></div></div></div>
-      <div class="nav-item"><a href="https://h3ad-sec.github.io/H3AD-DETECT/" target="_blank" rel="noopener">H3AD-DETECT</a><div class="nav-dropdown"><div class="nav-dropdown-inner"><a href="https://h3ad-sec.github.io/TRACERULES/" target="_blank" rel="noopener">TRACERULES</a></div></div></div>
-      <div class="nav-item"><a href="https://h3ad-sec.github.io/H3AD-HUNT/" target="_blank" rel="noopener">H3AD-HUNT</a><div class="nav-dropdown"><div class="nav-dropdown-inner"><a href="https://h3ad-sec.github.io/HYPOS/" target="_blank" rel="noopener">HYPOS</a><a href="https://h3ad-sec.github.io/PIVEX/" target="_blank" rel="noopener">PIVEX</a><a href="https://h3ad-sec.github.io/TRACEPULSE/" target="_blank" rel="noopener">TRACEPULSE</a></div></div></div>
-      <div class="nav-item"><a href="https://h3ad-sec.github.io/H3AD-OPS/" target="_blank" rel="noopener">H3AD-OPS</a><div class="nav-dropdown"><div class="nav-dropdown-inner"><a href="https://h3ad-sec.github.io/QUICKTRACE/" target="_blank" rel="noopener">QUICKTRACE</a><a href="https://h3ad-sec.github.io/PHISHOPS/" class="nav-current">PHISHOPS</a></div></div></div>
-      <a href="https://h3ad-sec.github.io/H3AD-DF/" target="_blank" rel="noopener">H3AD-DF</a>
-      <a href="https://h3ad-sec.github.io/H3AD-IR/" target="_blank" rel="noopener">H3AD-IR</a>
+      <div class="nav-item">
+        <a href="https://h3ad-sec.github.io/H3AD-X/">H3AD-X</a>
+        <div class="nav-dropdown"><div class="nav-dropdown-inner">
+          <a href="https://h3ad-sec.github.io/X-VERDIKT/" target="_blank" rel="noopener">X-VERDIKT</a>
+          <a href="https://h3ad-sec.github.io/IOC-VERDIKT/" target="_blank" rel="noopener">IOC-VERDIKT</a>
+          <a href="https://h3ad-sec.github.io/PARSE-X/" target="_blank" rel="noopener">PARSE-X</a>
+          <a href="https://h3ad-sec.github.io/DNSCOPE/" target="_blank" rel="noopener">DNSCOPE</a>
+          <a href="https://h3ad-sec.github.io/MAILSCOPE/" target="_blank" rel="noopener">MAILSCOPE</a>
+          <a href="https://h3ad-sec.github.io/INFRA-SCOPE/" target="_blank" rel="noopener">INFRA-SCOPE</a>
+        </div></div>
+      </div>
+      <div class="nav-item">
+        <a href="https://h3ad-sec.github.io/H3AD-AI/">H3AD-AI</a>
+        <div class="nav-dropdown"><div class="nav-dropdown-inner">
+          <a href="https://h3ad-sec.github.io/PROMPTVAULT/" target="_blank" rel="noopener">PROMPTVAULT</a>
+        </div></div>
+      </div>
+      <div class="nav-item">
+        <a href="https://h3ad-sec.github.io/H3AD-DETECT/">H3AD-DETECT</a>
+        <div class="nav-dropdown"><div class="nav-dropdown-inner">
+          <a href="https://h3ad-sec.github.io/TRACERULES/" target="_blank" rel="noopener">TRACERULES</a>
+        </div></div>
+      </div>
+      <div class="nav-item">
+        <a href="https://h3ad-sec.github.io/H3AD-HUNT/">H3AD-HUNT</a>
+        <div class="nav-dropdown"><div class="nav-dropdown-inner">
+          <a href="https://h3ad-sec.github.io/HYPOS/" target="_blank" rel="noopener">HYPOS</a>
+          <a href="https://h3ad-sec.github.io/PIVEX/" target="_blank" rel="noopener">PIVEX</a>
+          <a href="https://h3ad-sec.github.io/TRACEPULSE/" target="_blank" rel="noopener">TRACEPULSE</a>
+        </div></div>
+      </div>
+      <div class="nav-item">
+        <a href="https://h3ad-sec.github.io/H3AD-OPS/">H3AD-OPS</a>
+        <div class="nav-dropdown"><div class="nav-dropdown-inner">
+          <a href="https://h3ad-sec.github.io/QUICKTRACE/" target="_blank" rel="noopener">QUICKTRACE</a>
+        </div></div>
+      </div>
+      <a href="https://h3ad-sec.github.io/H3AD-DF/">H3AD-DF</a>
+      <a href="https://h3ad-sec.github.io/H3AD-IR/">H3AD-IR</a>
       <div class="nav-divider"></div>
       <a href="mailto:h3adsec@gmail.com">CONTACT</a>
     </div>
@@ -233,29 +268,27 @@
   </nav>
 
   <div class="nav-drawer" id="navDrawer">
-    <a href="https://h3ad-sec.github.io" target="_blank" rel="noopener" onclick="closeDrawer()">HOME ↗</a>
-    <a href="https://h3ad-sec.github.io/H3AD/" target="_blank" rel="noopener" onclick="closeDrawer()">H3AD ↗</a>
-    <a href="https://h3ad-sec.github.io/H3AD-X/" target="_blank" rel="noopener" onclick="closeDrawer()">H3AD-X ↗</a>
+    <a href="https://h3ad-sec.github.io" onclick="closeDrawer()">HOME</a>
+    <a href="https://h3ad-sec.github.io/H3AD/" onclick="closeDrawer()">H3AD</a>
+    <a href="https://h3ad-sec.github.io/H3AD-X/" onclick="closeDrawer()">H3AD-X</a>
     <a href="https://h3ad-sec.github.io/X-VERDIKT/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ X-VERDIKT ↗</a>
+    <a href="https://h3ad-sec.github.io/IOC-VERDIKT/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ IOC-VERDIKT ↗</a>
     <a href="https://h3ad-sec.github.io/PARSE-X/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ PARSE-X ↗</a>
     <a href="https://h3ad-sec.github.io/DNSCOPE/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ DNSCOPE ↗</a>
-    <a href="https://h3ad-sec.github.io/H3AD-AI/" target="_blank" rel="noopener" onclick="closeDrawer()">H3AD-AI ↗</a>
-    <a href="https://h3ad-sec.github.io/INSIGHT-AI/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ INSIGHT-AI ↗</a>
-    <a href="https://h3ad-sec.github.io/QUERYCRAFT-AI/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ QUERYCRAFT-AI ↗</a>
-    <a href="https://h3ad-sec.github.io/FPLENS-AI/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ FPLENS-AI ↗</a>
-    <a href="https://h3ad-sec.github.io/ATTMAP-AI/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ ATTMAP-AI ↗</a>
-    <a href="https://h3ad-sec.github.io/CHRONO-AI/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ CHRONO-AI ↗</a>
-    <a href="https://h3ad-sec.github.io/H3AD-DETECT/" target="_blank" rel="noopener" onclick="closeDrawer()">H3AD-DETECT ↗</a>
+    <a href="https://h3ad-sec.github.io/MAILSCOPE/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ MAILSCOPE ↗</a>
+    <a href="https://h3ad-sec.github.io/INFRA-SCOPE/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ INFRA-SCOPE ↗</a>
+    <a href="https://h3ad-sec.github.io/H3AD-AI/" onclick="closeDrawer()">H3AD-AI</a>
+    <a href="https://h3ad-sec.github.io/PROMPTVAULT/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ PROMPTVAULT ↗</a>
+    <a href="https://h3ad-sec.github.io/H3AD-DETECT/" onclick="closeDrawer()">H3AD-DETECT</a>
     <a href="https://h3ad-sec.github.io/TRACERULES/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ TRACERULES ↗</a>
-    <a href="https://h3ad-sec.github.io/H3AD-HUNT/" target="_blank" rel="noopener" onclick="closeDrawer()">H3AD-HUNT ↗</a>
+    <a href="https://h3ad-sec.github.io/H3AD-HUNT/" onclick="closeDrawer()">H3AD-HUNT</a>
     <a href="https://h3ad-sec.github.io/HYPOS/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ HYPOS ↗</a>
     <a href="https://h3ad-sec.github.io/PIVEX/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ PIVEX ↗</a>
     <a href="https://h3ad-sec.github.io/TRACEPULSE/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ TRACEPULSE ↗</a>
-    <a href="https://h3ad-sec.github.io/H3AD-OPS/" target="_blank" rel="noopener" onclick="closeDrawer()">H3AD-OPS ↗</a>
+    <a href="https://h3ad-sec.github.io/H3AD-OPS/" onclick="closeDrawer()">H3AD-OPS</a>
     <a href="https://h3ad-sec.github.io/QUICKTRACE/" target="_blank" rel="noopener" onclick="closeDrawer()" class="drawer-sub">↳ QUICKTRACE ↗</a>
-    <a href="https://h3ad-sec.github.io/PHISHOPS/" onclick="closeDrawer()" class="drawer-sub nav-current">↳ PHISHOPS</a>
-    <a href="https://h3ad-sec.github.io/H3AD-DF/" target="_blank" rel="noopener" onclick="closeDrawer()">H3AD-DF ↗</a>
-    <a href="https://h3ad-sec.github.io/H3AD-IR/" target="_blank" rel="noopener" onclick="closeDrawer()">H3AD-IR ↗</a>
+    <a href="https://h3ad-sec.github.io/H3AD-DF/" onclick="closeDrawer()">H3AD-DF</a>
+    <a href="https://h3ad-sec.github.io/H3AD-IR/" onclick="closeDrawer()">H3AD-IR</a>
     <a href="mailto:h3adsec@gmail.com" onclick="closeDrawer()">CONTACT</a>
   </div>
 
@@ -326,6 +359,7 @@
       <div class="section-label">EXPORT</div>
       <div class="export-bar">
         <button class="btn-export btn-export-primary" onclick="exportReport()">COPY FULL REPORT</button>
+        <button class="btn-export btn-export-secondary" onclick="downloadReport()">DOWNLOAD REPORT (.MD)</button>
         <button class="btn-export btn-export-secondary" onclick="resetScan()">NEW SCAN</button>
       </div>
     </div>
@@ -342,6 +376,11 @@
         <div class="field-group"><label class="field-label">VIRUSTOTAL API KEY</label><input class="field-input" id="set_vt" type="password" placeholder="VirusTotal API v3 key" /></div>
         <div class="field-group"><label class="field-label">URLSCAN.IO API KEY (optional)</label><input class="field-input" id="set_urlscan" type="password" placeholder="URLScan.io API key" /></div>
       </div>
+      <div class="key-import-row">
+        <button class="btn-cancel" onclick="document.getElementById('keyImportInput').click()">IMPORT FILE</button>
+        <input type="file" id="keyImportInput" accept=".txt,.csv,.md,.markdown,.json" style="display:none" onchange="handleKeyImport(event)" />
+        <span class="key-import-msg" id="keyImportMsg">JSON, TXT, CSV, or MD — one source:key pair per line or row</span>
+      </div>
       <div class="modal-actions">
         <button class="btn-cancel" onclick="closeSettings()">CANCEL</button>
         <button class="btn-save" onclick="saveSettings()">SAVE KEYS</button>
@@ -354,10 +393,88 @@
   var SETTINGS_KEY = 'phishops_scan_settings';
   function loadSettings(){try{return JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}');}catch(e){return {};}}
   function saveSettings(){var s=loadSettings();s.vtKey=document.getElementById('set_vt').value.trim();s.urlscanKey=document.getElementById('set_urlscan').value.trim();localStorage.setItem(SETTINGS_KEY,JSON.stringify(s));closeSettings();checkKeyState();}
-  function openSettings(){var s=loadSettings();document.getElementById('set_vt').value=s.vtKey||'';document.getElementById('set_urlscan').value=s.urlscanKey||'';document.getElementById('settingsModal').classList.add('open');}
+  function openSettings(){
+    var s=loadSettings();
+    document.getElementById('set_vt').value=s.vtKey||'';
+    document.getElementById('set_urlscan').value=s.urlscanKey||'';
+    var msg=document.getElementById('keyImportMsg');
+    if(msg){msg.textContent='JSON, TXT, CSV, or MD — one source:key pair per line or row';msg.style.color='var(--muted)';}
+    document.getElementById('settingsModal').classList.add('open');
+  }
   function closeSettings(){document.getElementById('settingsModal').classList.remove('open');}
   function closeSettingsOutside(e){if(e.target===document.getElementById('settingsModal'))closeSettings();}
   function checkKeyState(){var s=loadSettings();document.getElementById('noKeyWarn').style.display=s.vtKey?'none':'block';}
+
+  // ── KEY IMPORT ────────────────────────────────────────────────────────────────
+  var KEY_ALIASES={
+    set_vt:['vt','virustotal','virus total','virustotalkey','virustotal api key'],
+    set_urlscan:['urlscan','urlscan.io','us','url scan','urlscankey','urlscan api key']
+  };
+  function normalizeKeyField(raw){
+    var clean=String(raw||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+    if(!clean)return null;
+    for(var field in KEY_ALIASES){
+      for(var i=0;i<KEY_ALIASES[field].length;i++){
+        if(KEY_ALIASES[field][i].replace(/[^a-z0-9]/g,'')===clean)return field;
+      }
+    }
+    return null;
+  }
+  // txt/csv/md all share one parser: markdown table rows ("| Source | Key |"),
+  // and source:key / source=key / source,key lines all reduce to the same pairs.
+  function parseKeyPairsFromText(text){
+    var pairs=[];
+    text.split(/\r?\n/).forEach(function(line){
+      line=line.trim();
+      if(!line||line[0]==='#')return;
+      if(line[0]==='|'){
+        var cells=line.split('|').map(function(c){return c.trim();}).filter(function(c){return c;});
+        if(cells.length>=2&&!/^-+$/.test(cells[0]))pairs.push([cells[0],cells[1]]);
+        return;
+      }
+      var m=line.match(/^([^=:,\t]+)[=:,\t]\s*(.+)$/);
+      if(m)pairs.push([m[1].trim(),m[2].trim().replace(/^["']|["']$/g,'')]);
+    });
+    return pairs;
+  }
+  function applyImportedKeys(pairs){
+    var matched=0,skipped=0;
+    pairs.forEach(function(p){
+      var field=normalizeKeyField(p[0]);
+      var value=String(p[1]==null?'':p[1]).trim();
+      var el=field&&document.getElementById(field);
+      if(el&&value){el.value=value;matched++;}else skipped++;
+    });
+    var msg=document.getElementById('keyImportMsg');
+    if(!msg)return;
+    if(matched){msg.textContent='Imported '+matched+' key'+(matched!==1?'s':'')+(skipped?' · '+skipped+' unrecognized':'')+' — review, then SAVE KEYS';msg.style.color='var(--accent)';}
+    else{msg.textContent='No recognizable key (vt / urlscan) found in that file';msg.style.color='var(--warn)';}
+  }
+  function handleKeyImport(e){
+    var file=e.target.files[0];
+    if(!file)return;
+    var ext=file.name.split('.').pop().toLowerCase();
+    var r=new FileReader();
+    if(ext==='json'){
+      r.onload=function(ev){
+        try{
+          var obj=JSON.parse(ev.target.result);
+          var pairs=Array.isArray(obj)
+            ?obj.map(function(o){return[o.source||o.name||o.service,o.key||o.value||o.apikey||o.apiKey];}).filter(function(p){return p[0]!=null;})
+            :(obj&&typeof obj==='object')?Object.keys(obj).map(function(k){return[k,obj[k]];}):[];
+          applyImportedKeys(pairs);
+        }catch(err){
+          var msg=document.getElementById('keyImportMsg');
+          if(msg){msg.textContent='Failed to parse JSON file';msg.style.color='var(--warn)';}
+        }
+      };
+      r.readAsText(file);
+    }else{
+      r.onload=function(ev){applyImportedKeys(parseKeyPairsFromText(ev.target.result));};
+      r.readAsText(file);
+    }
+    e.target.value='';
+  }
 
   // ── UTILITIES ────────────────────────────────────────────────────────────────
   function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -482,6 +599,11 @@
         continue;
       }
 
+      if(mimeType==='message/rfc822'){
+        await processForwardedMessage(bodyRaw,result);
+        continue;
+      }
+
       var isAttach=/attachment/i.test(cd);
       var fnMatch=cd.match(/filename\*?=["']?(?:utf-8'')?([^"';\r\n]+)/i)||ct.match(/name=["']?([^"';\r\n]+)/i);
       var fname=fnMatch?decodeRFC2047(fnMatch[1].trim()):'attachment_'+(i+1);
@@ -515,6 +637,52 @@
       }else{
         extractUrlsFromText(decodedText).forEach(function(u){if(result.urls.indexOf(u)===-1)result.urls.push(u);});
       }
+    }
+  }
+
+  // A message/rfc822 part is a full email embedded inside another (the standard shape for a
+  // user forwarding a phishing report, or an MTA wrapping a bounce/quarantine notice). Without
+  // this, the outer wrapper's own metadata gets analyzed instead of the real attack — the most
+  // common real-world intake path (user-forwarded report) would silently miss the actual sender,
+  // URLs, and auth results of the phishing email itself.
+  async function processForwardedMessage(raw,result){
+    var splitIdx=raw.search(/\r?\n\r?\n/);
+    if(splitIdx===-1){
+      extractUrlsFromText(raw).forEach(function(u){if(result.urls.indexOf(u)===-1)result.urls.push(u);});
+      return;
+    }
+    var headerSection=raw.substring(0,splitIdx);
+    var bodySection=raw.substring(splitIdx).replace(/^\r?\n/,'');
+    var innerHeaders=parseHeaders(headerSection);
+
+    if(innerHeaders['from']){
+      if(!result.forwardedFrom){
+        result.forwardedFrom=innerHeaders['from'];
+        result.forwardedSubject=innerHeaders['subject']||'';
+      }
+      var innerAuthRaw=innerHeaders['authentication-results']||'';
+      if(Array.isArray(innerAuthRaw))innerAuthRaw=innerAuthRaw.join(' ');
+      if(!result.spf&&innerAuthRaw)result.spf=extractAuthVal(innerAuthRaw,'spf');
+      if(!result.dkim&&innerAuthRaw)result.dkim=extractAuthVal(innerAuthRaw,'dkim');
+      if(!result.dmarc&&innerAuthRaw)result.dmarc=extractAuthVal(innerAuthRaw,'dmarc');
+      if(!result.origIp){
+        var ixip=innerHeaders['x-originating-ip']||innerHeaders['x-sender-ip']||'';
+        if(ixip)result.origIp=ixip.replace(/[<>\[\]]/g,'').trim();
+      }
+    }
+
+    var ict=innerHeaders['content-type']||'text/plain';
+    var imimeType=ict.split(';')[0].trim().toLowerCase();
+    var iboundary=extractBoundary(ict);
+    if(iboundary){
+      await processMIMETree(bodySection,iboundary,result);
+    }else{
+      var icte=(innerHeaders['content-transfer-encoding']||'').toLowerCase().trim();
+      var itxt=bodySection;
+      if(icte==='base64'){try{itxt=atob(bodySection.replace(/\r?\n/g,'').trim());}catch(e){}}
+      else if(icte==='quoted-printable'){itxt=decodeQP(bodySection);}
+      if(imimeType==='text/html')extractUrlsFromHtml(itxt).forEach(function(u){if(result.urls.indexOf(u)===-1)result.urls.push(u);});
+      else extractUrlsFromText(itxt).forEach(function(u){if(result.urls.indexOf(u)===-1)result.urls.push(u);});
     }
   }
 
@@ -642,6 +810,12 @@
       return'<span class="p-chip '+cls+'">'+label+': '+val.toUpperCase()+'</span>';
     }
     var html='';
+    if(p.forwardedFrom){
+      html+='<div style="background:var(--warn-dim);border:1px solid rgba(245,158,11,0.3);border-radius:4px;padding:8px 12px;margin-bottom:10px;font-family:\'Exo 2\',sans-serif;font-size:0.68rem;color:var(--warn);line-height:1.6;">'
+        +'<strong>FORWARDED REPORT DETECTED.</strong> The email above wraps a forwarded original — analysis below uses the original message\'s sender, auth results, and URLs where available.<br/>'
+        +'Original FROM: '+esc(p.forwardedFrom)+(p.forwardedSubject?'<br/>Original SUBJECT: '+esc(p.forwardedSubject):'')
+        +'</div>';
+    }
     if(p.from)html+=row('FROM','<span style="color:var(--text-dim)">'+esc(p.from)+'</span>');
     if(p.replyTo)html+=row('REPLY-TO','<span style="color:var(--warn)">'+esc(p.replyTo)+'</span>');
     if(p.returnPath)html+=row('RETURN-PATH',esc(p.returnPath));
@@ -688,19 +862,53 @@
 
   // ── API CALLS ─────────────────────────────────────────────────────────────────
   async function vtGet(path,apiKey){var r=await fetch('https://www.virustotal.com/api/v3'+path,{headers:{'x-apikey':apiKey}});if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}
-  async function vtDomain(domain,apiKey){var data=await vtGet('/domains/'+encodeURIComponent(domain),apiKey);var a=data.data&&data.data.attributes;if(!a)return null;var s=a.last_analysis_stats||{};return{malicious:s.malicious||0,suspicious:s.suspicious||0,harmless:s.harmless||0,undetected:s.undetected||0,total:Object.values(s).reduce(function(x,y){return x+y;},0),creation_date:a.creation_date,reputation:a.reputation||0};}
-  async function vtUrl(url,apiKey){var id=vtUrlId(url);if(!id)return null;try{var data=await vtGet('/urls/'+id,apiKey);var a=data.data&&data.data.attributes;if(!a)return null;var s=a.last_analysis_stats||{};return{malicious:s.malicious||0,suspicious:s.suspicious||0,harmless:s.harmless||0,undetected:s.undetected||0,total:Object.values(s).reduce(function(x,y){return x+y;},0)};}catch(e){return null;}}
-  async function vtIp(ip,apiKey){var data=await vtGet('/ip_addresses/'+encodeURIComponent(ip),apiKey);var a=data.data&&data.data.attributes;if(!a)return null;var s=a.last_analysis_stats||{};return{malicious:s.malicious||0,suspicious:s.suspicious||0,harmless:s.harmless||0,undetected:s.undetected||0,total:Object.values(s).reduce(function(x,y){return x+y;},0),country:a.country,as_owner:a.as_owner};}
-  async function vtHash(hash,apiKey){var data=await vtGet('/files/'+hash,apiKey);var a=data.data&&data.data.attributes;if(!a)return null;var s=a.last_analysis_stats||{};return{malicious:s.malicious||0,suspicious:s.suspicious||0,harmless:s.harmless||0,undetected:s.undetected||0,total:Object.values(s).reduce(function(x,y){return x+y;},0),type:a.type_description,name:a.meaningful_name};}
+  async function vtDomain(domain,apiKey){var data=await vtGet('/domains/'+encodeURIComponent(domain),apiKey);var a=data.data&&data.data.attributes;if(!a)return{notFound:true};var s=a.last_analysis_stats||{};return{malicious:s.malicious||0,suspicious:s.suspicious||0,harmless:s.harmless||0,undetected:s.undetected||0,total:Object.values(s).reduce(function(x,y){return x+y;},0),creation_date:a.creation_date,reputation:a.reputation||0};}
+  async function vtUrl(url,apiKey){var id=vtUrlId(url);if(!id)return{notFound:true};var data=await vtGet('/urls/'+id,apiKey);var a=data.data&&data.data.attributes;if(!a)return{notFound:true};var s=a.last_analysis_stats||{};return{malicious:s.malicious||0,suspicious:s.suspicious||0,harmless:s.harmless||0,undetected:s.undetected||0,total:Object.values(s).reduce(function(x,y){return x+y;},0)};}
+  async function vtIp(ip,apiKey){var data=await vtGet('/ip_addresses/'+encodeURIComponent(ip),apiKey);var a=data.data&&data.data.attributes;if(!a)return{notFound:true};var s=a.last_analysis_stats||{};return{malicious:s.malicious||0,suspicious:s.suspicious||0,harmless:s.harmless||0,undetected:s.undetected||0,total:Object.values(s).reduce(function(x,y){return x+y;},0),country:a.country,as_owner:a.as_owner};}
+  async function vtHash(hash,apiKey){var data=await vtGet('/files/'+hash,apiKey);var a=data.data&&data.data.attributes;if(!a)return{notFound:true};var s=a.last_analysis_stats||{};return{malicious:s.malicious||0,suspicious:s.suspicious||0,harmless:s.harmless||0,undetected:s.undetected||0,total:Object.values(s).reduce(function(x,y){return x+y;},0),type:a.type_description,name:a.meaningful_name};}
   async function rdapAge(domain){try{var r=await fetch('https://rdap.org/domain/'+encodeURIComponent(domain));if(!r.ok)return null;var data=await r.json();var reg=(data.events||[]).find(function(e){return e.eventAction==='registration';});return reg?reg.eventDate:null;}catch(e){return null;}}
   async function urlscanSubmit(url,apiKey){try{var r=await fetch('https://urlscan.io/api/v1/scan/',{method:'POST',headers:{'API-Key':apiKey,'Content-Type':'application/json'},body:JSON.stringify({url:url,visibility:'public'})});if(!r.ok)return null;var d=await r.json();return d.uuid||null;}catch(e){return null;}}
   async function urlscanResult(uuid){for(var i=0;i<4;i++){await sleep(8000);try{var r=await fetch('https://urlscan.io/api/v1/result/'+uuid+'/');if(r.status===404)continue;if(!r.ok)return null;var d=await r.json();return{verdicts:d.verdicts,resultURL:'https://urlscan.io/result/'+uuid+'/'};} catch(e){continue;}}return null;}
+
+  // ── RATE LIMITING ─────────────────────────────────────────────────────────────
+  // VT free tier allows 4 req/min. Throttle is tracked globally (not per-loop) so
+  // the boundary between IOC types (domains -> urls -> ip -> hashes) can't produce
+  // two calls closer than the minimum gap.
+  var lastVtCallTime=0;
+  var VT_MIN_GAP_MS=16000;
+  async function vtThrottle(){
+    var now=Date.now();
+    var elapsed=now-lastVtCallTime;
+    if(lastVtCallTime>0&&elapsed<VT_MIN_GAP_MS)await sleep(VT_MIN_GAP_MS-elapsed);
+    lastVtCallTime=Date.now();
+  }
 
   // ── SCORING ───────────────────────────────────────────────────────────────────
   function scoreFromStats(s){if(!s)return 0;return Math.min(40,(s.malicious||0)*5+(s.suspicious||0)*2);}
   function verdictLabel(s){if(s>=70)return'CRITICAL';if(s>=45)return'HIGH RISK';if(s>=20)return'MEDIUM RISK';return'LOW RISK';}
   function verdictClass(s){if(s>=70)return'verdict-critical';if(s>=45)return'verdict-high';if(s>=20)return'verdict-medium';return'verdict-low';}
-  function iocBadge(s){if(!s)return'<span class="ioc-verdict-badge badge-skipped">SKIPPED</span>';if(s.malicious>0)return'<span class="ioc-verdict-badge badge-malicious">MALICIOUS ('+s.malicious+'/'+s.total+')</span>';if(s.suspicious>0)return'<span class="ioc-verdict-badge badge-suspicious">SUSPICIOUS ('+s.suspicious+'/'+s.total+')</span>';return'<span class="ioc-verdict-badge badge-clean">CLEAN ('+s.harmless+'/'+s.total+')</span>';}
+  // Three distinct non-data states, so an analyst can't mistake one for another:
+  //  {skipped:true}  — never attempted (no API key configured)
+  //  {error:true}    — attempted, request failed (rate-limited, network error, etc — unknown verdict)
+  //  {notFound:true} — attempted, VT/URLScan returned no record for this indicator (a real "not found")
+  function iocBadge(s){
+    if(!s||s.skipped)return'<span class="ioc-verdict-badge badge-skipped">SKIPPED (NO KEY)</span>';
+    if(s.error)return'<span class="ioc-verdict-badge badge-error">LOOKUP FAILED</span>';
+    if(s.notFound)return'<span class="ioc-verdict-badge badge-unknown">NO DATA ON FILE</span>';
+    if(s.malicious>0)return'<span class="ioc-verdict-badge badge-malicious">MALICIOUS ('+s.malicious+'/'+s.total+')</span>';
+    if(s.suspicious>0)return'<span class="ioc-verdict-badge badge-suspicious">SUSPICIOUS ('+s.suspicious+'/'+s.total+')</span>';
+    return'<span class="ioc-verdict-badge badge-clean">CLEAN ('+s.harmless+'/'+s.total+')</span>';
+  }
+  // Plain-text equivalent of iocBadge, for the exported report — same three-way distinction,
+  // so "skipped/failed" can never read as "clean" in the artifact an analyst pastes into a ticket.
+  function vtStatusText(s){
+    if(!s||s.skipped)return'not checked (no VT key)';
+    if(s.error)return'LOOKUP FAILED — verify manually';
+    if(s.notFound)return'no data on file';
+    if(s.malicious>0)return'MALICIOUS ('+s.malicious+'/'+s.total+' engines)';
+    if(s.suspicious>0)return'SUSPICIOUS ('+s.suspicious+'/'+s.total+' engines)';
+    return'clean ('+s.harmless+'/'+s.total+' engines)';
+  }
 
   // ── MAIN SCAN ─────────────────────────────────────────────────────────────────
   var scanResults={};
@@ -722,6 +930,8 @@
       user:'',
       urls:p.urls,
       attachments:p.attachments||[],
+      forwardedFrom:p.forwardedFrom||'',
+      forwardedSubject:p.forwardedSubject||'',
     };
     inputs.domains=[];
     inputs.urls.forEach(function(u){var d=extractDomain(u);if(d&&inputs.domains.indexOf(d)===-1)inputs.domains.push(d);});
@@ -741,6 +951,8 @@
     logEntries=[];
 
     var score=0;
+    var failedLookups=0;
+    lastVtCallTime=0;
     scanResults={inputs:inputs,domains:{},urls:{},ips:{},attachments:{},urlscans:{}};
 
     addLog('parse','Parsed email: '+inputs.domains.length+' domain(s), '+inputs.urls.length+' URL(s), '+(inputs.origIp?'1 IP':'0 IPs')+', '+inputs.attachments.length+' attachment(s)');
@@ -759,21 +971,22 @@
     for(var i=0;i<inputs.domains.length;i++){
       var dom=inputs.domains[i];var lid='dom_'+i;
       addLog(lid,'VirusTotal: domain — '+dom);
-      if(!vtKey){setLog(lid,'skip','Skipped (no VT key): '+dom);scanResults.domains[dom]=null;continue;}
+      if(!vtKey){setLog(lid,'skip','Skipped (no VT key): '+dom);scanResults.domains[dom]={skipped:true};continue;}
       try{
-        await sleep(i>0?16000:0);
+        await vtThrottle();
         var res=await vtDomain(dom,vtKey);
         scanResults.domains[dom]=res;
-        if(res){
+        if(res.notFound){setLog(lid,'done','VT domain: '+dom+' — no data on file');}
+        else{
           score+=scoreFromStats(res);
           var ageStr='';
           if(res.creation_date){var ageDays=domainAge(new Date(res.creation_date*1000).toISOString());scanResults.domains[dom].ageDays=ageDays;if(ageDays!==null&&ageDays<7)score+=40;else if(ageDays!==null&&ageDays<30)score+=20;ageStr=' · age '+(ageDays!==null?ageDays+'d':'unknown');}
           setLog(lid,'done','VT domain: '+dom+' — '+(res.malicious>0?res.malicious+' malicious':'clean')+ageStr);
-        }else setLog(lid,'done','VT domain: '+dom+' — no data');
-      }catch(e){setLog(lid,'err','VT domain failed: '+dom+' ('+e.message+')');scanResults.domains[dom]=null;}
+        }
+      }catch(e){setLog(lid,'err','VT domain lookup failed: '+dom+' ('+e.message+')');scanResults.domains[dom]={error:true,message:e.message};failedLookups++;}
     }
 
-    // RDAP age fallback
+    // RDAP age fallback (also runs for skipped/errored/not-found domains — age data is independent of VT reputation)
     for(var j=0;j<inputs.domains.length;j++){
       var d2=inputs.domains[j];var rd=scanResults.domains[d2];
       if(rd&&rd.ageDays!==undefined)continue;
@@ -791,14 +1004,14 @@
     for(var k=0;k<inputs.urls.length;k++){
       var rawUrl=inputs.urls[k];var cleanUrl=refang(rawUrl);var ulid='url_'+k;
       addLog(ulid,'VirusTotal: URL — '+rawUrl.substring(0,55));
-      if(!vtKey){setLog(ulid,'skip','Skipped (no VT key): URL '+(k+1));scanResults.urls[rawUrl]=null;continue;}
+      if(!vtKey){setLog(ulid,'skip','Skipped (no VT key): URL '+(k+1));scanResults.urls[rawUrl]={skipped:true};continue;}
       try{
-        await sleep(k>0?16000:0);
+        await vtThrottle();
         var ures=await vtUrl(cleanUrl,vtKey);
         scanResults.urls[rawUrl]=ures;
-        if(ures){score+=scoreFromStats(ures);setLog(ulid,'done','VT URL: '+(ures.malicious>0?ures.malicious+' malicious engines':'clean'));}
-        else setLog(ulid,'done','VT URL: not in database');
-      }catch(e){setLog(ulid,'err','VT URL failed ('+e.message+')');scanResults.urls[rawUrl]=null;}
+        if(ures.notFound)setLog(ulid,'done','VT URL: not in database');
+        else{score+=scoreFromStats(ures);setLog(ulid,'done','VT URL: '+(ures.malicious>0?ures.malicious+' malicious engines':'clean'));}
+      }catch(e){setLog(ulid,'err','VT URL lookup failed ('+e.message+')');scanResults.urls[rawUrl]={error:true,message:e.message};failedLookups++;}
     }
 
     // URLScan (first URL)
@@ -821,15 +1034,15 @@
     // VT IP check
     if(inputs.origIp){
       addLog('ip','VirusTotal: IP — '+inputs.origIp);
-      if(!vtKey){setLog('ip','skip','Skipped (no VT key)');scanResults.ips[inputs.origIp]=null;}
+      if(!vtKey){setLog('ip','skip','Skipped (no VT key)');scanResults.ips[inputs.origIp]={skipped:true};}
       else{
         try{
-          await sleep(16000);
+          await vtThrottle();
           var ipres=await vtIp(inputs.origIp,vtKey);
           scanResults.ips[inputs.origIp]=ipres;
-          if(ipres){score+=Math.min(25,(ipres.malicious||0)*3);setLog('ip','done','VT IP: '+(ipres.malicious>0?ipres.malicious+' malicious':'clean')+(ipres.country?' · '+ipres.country:''));}
-          else setLog('ip','done','VT IP: no data');
-        }catch(e){setLog('ip','err','VT IP failed ('+e.message+')');}
+          if(ipres.notFound)setLog('ip','done','VT IP: no data on file');
+          else{score+=Math.min(25,(ipres.malicious||0)*3);setLog('ip','done','VT IP: '+(ipres.malicious>0?ipres.malicious+' malicious':'clean')+(ipres.country?' · '+ipres.country:''));}
+        }catch(e){setLog('ip','err','VT IP lookup failed ('+e.message+')');scanResults.ips[inputs.origIp]={error:true,message:e.message};failedLookups++;}
       }
     }
 
@@ -839,26 +1052,28 @@
       if(!att.sha256)continue;
       var hid='hash_'+a;
       addLog(hid,'VirusTotal: attachment hash — '+att.name);
-      if(!vtKey){setLog(hid,'skip','Skipped (no VT key): '+att.name);scanResults.attachments[att.sha256]=null;continue;}
+      if(!vtKey){setLog(hid,'skip','Skipped (no VT key): '+att.name);scanResults.attachments[att.sha256]={skipped:true};continue;}
       try{
-        await sleep(16000);
+        await vtThrottle();
         var hres=await vtHash(att.sha256,vtKey);
         scanResults.attachments[att.sha256]=hres;
-        if(hres&&hres.malicious>0)score+=60;
-        setLog(hid,'done','VT hash: '+att.name+' — '+(hres?(hres.malicious>0?'MALICIOUS — '+hres.malicious+' engines':'clean'):'not in database'));
-      }catch(e){setLog(hid,'err','VT hash failed: '+att.name+' ('+e.message+')');}
+        if(hres.notFound)setLog(hid,'done','VT hash: '+att.name+' — not in database');
+        else{if(hres.malicious>0)score+=60;setLog(hid,'done','VT hash: '+att.name+' — '+(hres.malicious>0?'MALICIOUS — '+hres.malicious+' engines':'clean'));}
+      }catch(e){setLog(hid,'err','VT hash lookup failed: '+att.name+' ('+e.message+')');scanResults.attachments[att.sha256]={error:true,message:e.message};failedLookups++;}
     }
 
     addLog('build','Building investigation report...');
     score=Math.min(100,score);
     await sleep(400);
-    setLog('build','done','Report ready. Risk score: '+score+'/100');
+    if(failedLookups>0)setLog('build','err','Report ready. Risk score: '+score+'/100 — '+failedLookups+' lookup(s) FAILED, score may be incomplete.');
+    else setLog('build','done','Report ready. Risk score: '+score+'/100');
+    scanResults.failedLookups=failedLookups;
     await sleep(300);
-    renderResults(inputs,score);
+    renderResults(inputs,score,failedLookups);
   }
 
   // ── RENDER RESULTS ───────────────────────────────────────────────────────────
-  function renderResults(inputs,score){
+  function renderResults(inputs,score,failedLookups){
     document.getElementById('progressPanel').style.display='none';
     document.getElementById('resultsPanel').style.display='block';
 
@@ -878,6 +1093,7 @@
     if(flaggedAttachments>0)vBanner+='<div class="vstat flagged">'+flaggedAttachments+' ATTACHMENT(S) MALICIOUS</div>';
     else if(inputs.attachments.length>0)vBanner+='<div class="vstat clean">ATTACHMENTS CLEAN</div>';
     if(authFail)vBanner+='<div class="vstat flagged">AUTH FAILURES</div>';
+    if(failedLookups>0)vBanner+='<div class="vstat flagged">'+failedLookups+' LOOKUP(S) FAILED — SCORE MAY BE INCOMPLETE</div>';
     vBanner+='</div>';
     var vEl=document.getElementById('verdictBanner');
     vEl.innerHTML=vBanner;vEl.className='verdict-banner '+vClass;
@@ -888,7 +1104,7 @@
       var senderDom=inputs.sender.includes('@')?inputs.sender.split('@')[1]:null;
       var sRes=senderDom?(scanResults.domains[senderDom]||null):null;
       cards+='<div class="ioc-card"><div class="ioc-card-header"><div><div class="ioc-card-label">SENDER</div><div class="ioc-card-value">'+esc(inputs.senderDisplay||inputs.sender)+'</div></div>'+iocBadge(sRes)+'</div>';
-      if(sRes){var ai=sRes.ageDays!==undefined?(sRes.ageDays+'d old'):null;cards+='<div class="ioc-card-details"><span class="ioc-detail'+(sRes.malicious>0?' highlight':'')+'">'+((sRes.malicious||0)+(sRes.suspicious||0))+'/'+sRes.total+' engines</span>';if(ai)cards+='<span class="ioc-detail'+(sRes.ageDays<30?' highlight':'')+'">Age: '+esc(ai)+'</span>';cards+='</div>';}
+      if(sRes&&(sRes.total!==undefined||sRes.ageDays!==undefined)){var ai=sRes.ageDays!==undefined?(sRes.ageDays+'d old'):null;cards+='<div class="ioc-card-details">';if(sRes.total!==undefined)cards+='<span class="ioc-detail'+(sRes.malicious>0?' highlight':'')+'">'+((sRes.malicious||0)+(sRes.suspicious||0))+'/'+sRes.total+' engines</span>';if(ai)cards+='<span class="ioc-detail'+(sRes.ageDays<30?' highlight':'')+'">Age: '+esc(ai)+'</span>';cards+='</div>';}
       if(inputs.replyTo&&inputs.replyTo!==inputs.sender)cards+='<div class="ioc-card-details"><span class="ioc-detail highlight">Reply-To mismatch: '+esc(inputs.replyTo)+'</span></div>';
       if(inputs.returnPath&&inputs.returnPath!==inputs.sender)cards+='<div class="ioc-card-details"><span class="ioc-detail highlight">Return-Path mismatch: '+esc(inputs.returnPath)+'</span></div>';
       cards+='</div>';
@@ -898,7 +1114,7 @@
       if(inputs.sender&&inputs.sender.includes('@')&&inputs.sender.split('@')[1]===d)return;
       var dr=scanResults.domains[d];
       cards+='<div class="ioc-card"><div class="ioc-card-header"><div><div class="ioc-card-label">DOMAIN</div><div class="ioc-card-value">'+esc(d)+'</div></div>'+iocBadge(dr)+'</div>';
-      if(dr){var ai2=dr.ageDays!==undefined?(dr.ageDays+'d old'):null;cards+='<div class="ioc-card-details"><span class="ioc-detail'+(dr.malicious>0?' highlight':'')+'">'+((dr.malicious||0)+(dr.suspicious||0))+'/'+dr.total+' engines</span>';if(ai2)cards+='<span class="ioc-detail'+(dr.ageDays<30?' highlight':'')+'">Age: '+esc(ai2)+'</span>';cards+='</div>';}
+      if(dr&&(dr.total!==undefined||dr.ageDays!==undefined)){var ai2=dr.ageDays!==undefined?(dr.ageDays+'d old'):null;cards+='<div class="ioc-card-details">';if(dr.total!==undefined)cards+='<span class="ioc-detail'+(dr.malicious>0?' highlight':'')+'">'+((dr.malicious||0)+(dr.suspicious||0))+'/'+dr.total+' engines</span>';if(ai2)cards+='<span class="ioc-detail'+(dr.ageDays<30?' highlight':'')+'">Age: '+esc(ai2)+'</span>';cards+='</div>';}
       cards+='</div>';
     });
 
@@ -1064,9 +1280,9 @@
   }
 
   // ── EXPORT ────────────────────────────────────────────────────────────────────
-  function exportReport(){
+  function buildReportText(){
     var inputs=scanResults.inputs;
-    if(!inputs)return;
+    if(!inputs)return null;
     var lines=['# PHISHOPS AUTO SCAN REPORT','Generated: '+new Date().toISOString().replace('T',' ').split('.')[0],''];
     var vlabel=document.querySelector('.verdict-label');
     lines.push('## VERDICT');
@@ -1078,6 +1294,8 @@
     if(inputs.returnPath)lines.push('- Return-Path: '+inputs.returnPath);
     if(inputs.recipients)lines.push('- To: '+inputs.recipients);
     if(inputs.subject)lines.push('- Subject: '+inputs.subject);
+    if(inputs.forwardedFrom)lines.push('- Forwarded original FROM: '+inputs.forwardedFrom);
+    if(inputs.forwardedSubject)lines.push('- Forwarded original SUBJECT: '+inputs.forwardedSubject);
     lines.push('');
     lines.push('## HEADER AUTH');
     if(inputs.spf)lines.push('- SPF: '+inputs.spf.toUpperCase());
@@ -1086,10 +1304,11 @@
     if(inputs.origIp)lines.push('- X-Originating-IP: '+inputs.origIp);
     lines.push('');
     lines.push('## IOC ENRICHMENT');
-    Object.keys(scanResults.domains).forEach(function(d){var r=scanResults.domains[d];lines.push('Domain: '+d+(r?' — '+(r.malicious>0?'MALICIOUS ('+r.malicious+' engines)':'clean')+(r.ageDays!==undefined?', age: '+r.ageDays+'d':''):'— no data'));});
-    inputs.urls.forEach(function(u){var r=scanResults.urls[u];lines.push('URL: '+u+(r?' — '+(r.malicious>0?'MALICIOUS ('+r.malicious+' engines)':'clean'):'— no data'));});
-    if(inputs.origIp){var ir=scanResults.ips[inputs.origIp];lines.push('IP: '+inputs.origIp+(ir?' — '+(ir.malicious>0?'MALICIOUS ('+ir.malicious+')':'clean')+(ir.country?', '+ir.country:''):'— no data'));}
-    inputs.attachments.forEach(function(a){var hr=a.sha256?scanResults.attachments[a.sha256]:null;lines.push('Attachment: '+a.name+(a.sha256?' | SHA256: '+a.sha256:'')+(hr?' — '+(hr.malicious>0?'MALICIOUS ('+hr.malicious+' detections)':'clean'):''));});
+    Object.keys(scanResults.domains).forEach(function(d){var r=scanResults.domains[d];lines.push('Domain: '+d+' — '+vtStatusText(r)+(r&&r.ageDays!==undefined?', age: '+r.ageDays+'d':''));});
+    inputs.urls.forEach(function(u){var r=scanResults.urls[u];lines.push('URL: '+u+' — '+vtStatusText(r));});
+    if(inputs.origIp){var ir=scanResults.ips[inputs.origIp];lines.push('IP: '+inputs.origIp+' — '+vtStatusText(ir)+(ir&&ir.country?', '+ir.country:''));}
+    inputs.attachments.forEach(function(a){var hr=a.sha256?scanResults.attachments[a.sha256]:null;lines.push('Attachment: '+a.name+(a.sha256?' | SHA256: '+a.sha256+' — '+vtStatusText(hr):' (no hash computed)'));});
+    if(scanResults.failedLookups>0){lines.push('');lines.push('**WARNING: '+scanResults.failedLookups+' lookup(s) failed during this scan. Risk score above is likely incomplete — verify flagged-as-failed indicators manually.**');}
     lines.push('');
     lines.push('## MANUAL ACTIONS REQUIRED');
     lines.push('- [ ] Header relay chain traced via MXToolbox');
@@ -1097,10 +1316,35 @@
     lines.push('- [ ] Okta logs pulled for all recipients (±2hr window)');
     lines.push('- [ ] Containment actions executed (block/revoke/recall)');
     lines.push('- [ ] Ticket closed with root cause and disposition');
-    navigator.clipboard.writeText(lines.join('\n')).then(function(){
+    return lines.join('\n');
+  }
+
+  function exportReport(){
+    var text=buildReportText();
+    if(text===null)return;
+    navigator.clipboard.writeText(text).then(function(){
       var btns=document.querySelectorAll('.btn-export-primary');
       btns.forEach(function(b){b.textContent='COPIED ✓';setTimeout(function(){b.textContent='COPY FULL REPORT';},2000);});
     });
+  }
+
+  function downloadFile(content,filename,mimeType){
+    var blob=new Blob([content],{type:mimeType});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url;a.download=filename;
+    document.body.appendChild(a);a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){URL.revokeObjectURL(url);},1000);
+  }
+
+  function downloadReport(){
+    var text=buildReportText();
+    if(text===null)return;
+    var inputs=scanResults.inputs;
+    var domainPart=(inputs.sender&&inputs.sender.includes('@'))?inputs.sender.split('@')[1].replace(/[^a-z0-9.-]/gi,''):'scan';
+    var dateTag=new Date().toISOString().split('T')[0];
+    downloadFile(text,'phishops-report-'+domainPart+'-'+dateTag+'.md','text/markdown;charset=utf-8;');
   }
 
   function resetScan(){
@@ -1126,38 +1370,6 @@
 
   checkKeyState();
   initDropZone();
-  </script>
-  <div id="h3gc" style="position:fixed;bottom:16px;right:16px;display:flex;align-items:center;gap:6px;background:rgba(8,10,18,.9);border:1px solid rgba(255,255,255,.08);border-radius:5px;padding:5px 10px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.1em;color:rgba(255,255,255,.45);z-index:9500;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);pointer-events:none;">
-    <svg width="7" height="7" viewBox="0 0 8 8" fill="none"><circle cx="4" cy="4" r="3.5" stroke="rgba(74,222,128,.7)" stroke-width="1"/><circle cx="4" cy="4" r="1.5" fill="rgba(74,222,128,.8)"/></svg>
-    <span id="h3gc-n" style="color:rgba(74,222,128,.9);font-weight:600">—</span>
-    <span style="opacity:.5">VISITORS</span>
-  </div>
-  <!-- h3gc-v3 -->
-  <script>
-    (function(){
-      var key = (location.pathname.split('/').join('') || 'hub').toLowerCase();
-      var base = 'https://api.counterapi.dev/v1/h3ad-sec/' + key;
-      var lk = 'h3gc_c_' + key;
-      var sk = 'h3gc_s_' + key;
-      var el = document.getElementById('h3gc-n');
-      function store(k,v){try{localStorage.setItem(k,v);}catch(e){}}
-      function session(k){try{return sessionStorage.getItem(k);}catch(e){return null;}}
-      function sessionSet(k,v){try{sessionStorage.setItem(k,v);}catch(e){}}
-      try{ var cached=localStorage.getItem(lk); if(el&&cached) el.textContent=Number(cached).toLocaleString(); }catch(e){}
-      var seen = session(sk);
-      if (!seen) sessionSet(sk,'1');
-      fetch(seen ? base + '/' : base + '/up')
-        .then(function(r){ if(!r.ok) throw r; return r.json(); })
-        .then(function(d){
-          if(d.count!=null){ store(lk,d.count); if(el) el.textContent=Number(d.count).toLocaleString(); }
-        })
-        .catch(function(){});
-      var gsk = 'h3gc_s_total';
-      if (!session(gsk)) {
-        sessionSet(gsk,'1');
-        fetch('https://api.counterapi.dev/v1/h3ad-sec/total/up').catch(function(){});
-      }
-    })();
   </script>
 </body>
 </html>
