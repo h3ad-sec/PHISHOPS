@@ -2,32 +2,34 @@
 
 **Phishing Investigation Tracker — Part of [H3AD-OPS](https://h3ad-sec.github.io/H3AD-OPS/)**
 
-PHISHOPS is a structured 7-step phishing investigation workflow tool for SOC analysts. Walk through each investigation phase, track findings per step, and get a live-aggregated IOC list — all in the browser, no backend required.
+PHISHOPS is a phishing investigation tool for SOC analysts, in two modes: a guided 7-step manual tracker, and an automated scanner that parses a raw EML file and scores it against live threat intelligence. Both run entirely in the browser, no backend required.
 
 ## Features
 
-- 7-step investigation workflow: Receipt, Header Analysis, URL Triage, Sandbox, Identity Impact, Containment, Reporting
-- Live IOC aggregator — pulls IPs, domains, URLs, and hashes from all step inputs automatically
-- Step-by-step navigation with completion tracking
-- Mode toggle: BYOK vs Managed
-- localStorage persistence — resume investigations after page reload
+- **Manual Tracker**: 7-step investigation workflow, Triage, Header Analysis, URL Triage, Attachment Sandbox, Identity/Okta Impact, Containment, and Closure, each with its own fields, checklist, and escalation criteria
+- **Auto Scan**: drop a raw .eml file or paste email text, headers/URLs/attachment SHA256 hashes are extracted client-side, forwarded phishing reports are unwrapped automatically, then every indicator is enriched via VirusTotal, URLScan, and RDAP with a computed 0-100 risk score
+- **Overview view**: a landing page on both modes explaining how to use PHISHOPS, its capabilities, and how to read results, alongside the working tool
+- Live IOC aggregator (manual mode) — pulls senders, IPs, URLs, hashes, C2 indicators, and affected users from all step inputs automatically
+- Key import for Auto Scan's VirusTotal/URLScan keys from a JSON, TXT, CSV, or Markdown file
+- Export: copy IOCs, copy the full report, or download it as a Markdown file
+- localStorage persistence — resume manual investigations after page reload
 - Fully responsive — works on mobile, tablet, and desktop
 
-## Investigation Steps
+## Investigation Steps (Manual Tracker)
 
 | Step | Focus |
 |------|-------|
-| 1. Receipt | Email metadata, sender, recipients, subject, timestamps |
+| 1. Triage | Alert source, envelope fields, sender/reply-to/return-path mismatch |
 | 2. Header Analysis | Received chain, SPF/DKIM/DMARC, originating IP |
 | 3. URL Triage | Link extraction, redirect chains, domain registration age |
-| 4. Sandbox | Attachment detonation results, behavioral indicators |
-| 5. Identity Impact | Okta/Azure AD activity, clicked users, credential exposure |
-| 6. Containment | Blocked indicators, quarantined emails, user notifications |
-| 7. Reporting | Summary, verdict, recommendations, ticket handoff |
+| 4. Attachment | File hash, sandbox detonation, C2 indicators |
+| 5. Identity | Okta/Azure AD activity, clicked users, credential exposure |
+| 6. Containment | Blocking, revocation, evidence preservation |
+| 7. Closure | Root cause, disposition, IOC handoff for downstream TI |
 
 ## Live Tool
 
-[h3ad-sec.github.io/PHISHOPS](https://h3ad-sec.github.io/PHISHOPS/)
+[h3ad-sec.github.io/PHISHOPS](https://h3ad-sec.github.io/PHISHOPS/) (Manual Tracker) &middot; [Auto Scan](https://h3ad-sec.github.io/PHISHOPS/auto.html)
 
 ## Part of H3AD-SEC
 
