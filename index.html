@@ -118,7 +118,8 @@
     .nav-item:hover .nav-dropdown{display:block;}
     .nav-links .nav-dropdown a{font-family:'Exo 2',sans-serif;font-weight:400;display:block;padding:7px 12px;font-size:0.65rem;color:var(--muted);border:none;border-left:2px solid transparent;border-radius:0;transition:0.15s;}
     .nav-links .nav-dropdown a:hover,.nav-links .nav-dropdown a.nav-current{color:var(--accent);border-left-color:var(--accent);background:rgba(0,212,255,0.04);}
-    .theme-toggle{margin-left:auto;flex-shrink:0;cursor:pointer;padding-left:1rem;}
+    .nav-right{margin-left:auto;flex-shrink:0;display:flex;align-items:center;gap:14px;}
+    .theme-toggle{flex-shrink:0;cursor:pointer;}
     .toggle-track{width:42px;height:22px;background:var(--border);border-radius:50px;position:relative;transition:background 0.3s;}
     .toggle-thumb{width:14px;height:14px;background:var(--accent);border-radius:50%;position:absolute;top:4px;left:4px;transition:transform 0.3s;box-shadow:0 0 8px var(--accent);}
     body.light .toggle-thumb{transform:translateX(20px);}
@@ -130,15 +131,17 @@
     .nav-drawer a:hover{color:var(--accent);border-left-color:var(--accent);background:rgba(0,212,255,0.04);}
     .nav-drawer a.nav-current{color:var(--accent);border-left-color:var(--accent);}
     .drawer-sub{padding-left:1.8rem!important;font-size:0.7rem!important;opacity:0.8;}
+    .drawer-view-tabs{display:flex;gap:2px;padding:3px;background:var(--bg);border:1px solid var(--border);border-radius:6px;margin-bottom:10px;}
+    .drawer-view-tabs .view-tab{flex:1;text-align:center;padding:8px 6px;font-size:0.6rem;}
     body.nav-compact .nav-links{display:none;}
     body.nav-compact .hamburger{display:flex;}
     #scroll-sentinel{position:absolute;top:0;left:0;width:1px;height:10px;pointer-events:none;}
 
     /* APP LAYOUT */
-    .app-shell{position:relative;z-index:1;display:grid;grid-template-columns:200px 1fr 230px;min-height:calc(100vh - var(--nav-h) - 36px);margin-top:calc(var(--nav-h) + 36px);}
+    .app-shell{position:relative;z-index:1;display:grid;grid-template-columns:200px 1fr 230px;min-height:calc(100vh - var(--nav-h));margin-top:var(--nav-h);}
 
     /* STEP SIDEBAR */
-    .step-sidebar{border-right:1px solid var(--border);background:var(--panel);padding:1.5rem 0;position:sticky;top:calc(var(--nav-h) + 36px);height:calc(100vh - var(--nav-h) - 36px);overflow-y:auto;}
+    .step-sidebar{border-right:1px solid var(--border);background:var(--panel);padding:1.5rem 0;position:sticky;top:var(--nav-h);height:calc(100vh - var(--nav-h));overflow-y:auto;}
     .sidebar-label{font-family:'Share Tech Mono',monospace;font-size:0.52rem;letter-spacing:0.22em;color:var(--muted);text-transform:uppercase;padding:0 1.2rem;margin-bottom:0.75rem;}
     .step-item{display:flex;align-items:center;gap:10px;padding:9px 1.2rem;cursor:pointer;border-left:2px solid transparent;transition:0.15s;position:relative;}
     .step-item:hover{background:var(--primary-dim);border-left-color:var(--muted-dim);}
@@ -219,7 +222,7 @@
     .btn-prev:disabled,.btn-next:disabled{opacity:0.3;cursor:default;}
 
     /* IOC RAIL */
-    .ioc-rail{border-left:1px solid var(--border);background:var(--panel);padding:1.5rem 0;position:sticky;top:calc(var(--nav-h) + 36px);height:calc(100vh - var(--nav-h) - 36px);overflow-y:auto;display:flex;flex-direction:column;}
+    .ioc-rail{border-left:1px solid var(--border);background:var(--panel);padding:1.5rem 0;position:sticky;top:var(--nav-h);height:calc(100vh - var(--nav-h));overflow-y:auto;display:flex;flex-direction:column;}
     .ioc-header{padding:0 1rem;margin-bottom:1rem;}
     .ioc-title{font-family:'Share Tech Mono',monospace;font-size:0.56rem;letter-spacing:0.22em;color:var(--accent);text-transform:uppercase;margin-bottom:6px;}
     .ioc-count-bar{font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--muted);letter-spacing:0.06em;}
@@ -259,51 +262,66 @@
     .view-tab.active{color:var(--accent);border-color:var(--accent);background:var(--primary-dim);}
 
     /* OVERVIEW */
-    .hero{max-width:980px;margin:0 auto 4rem;padding-top:calc(var(--nav-h) + 36px + 2rem);padding-left:2rem;padding-right:2rem;position:relative;z-index:1;}
+    .hero{max-width:1040px;margin:0 auto 4rem;padding-top:calc(var(--nav-h) + 2.5rem);padding-left:2rem;padding-right:2rem;position:relative;z-index:1;}
     .hero-banner{font-family:'Exo 2',sans-serif;font-weight:700;font-size:2.4rem;letter-spacing:0.08em;text-align:center;margin-bottom:0.4rem;}
-    .hero-banner-tagline{text-align:center;font-family:'Share Tech Mono',monospace;font-size:0.72rem;letter-spacing:0.14em;color:var(--text-dim);text-transform:uppercase;margin-bottom:0.3rem;}
-    .hero-banner-by{text-align:center;font-family:'Share Tech Mono',monospace;font-size:0.56rem;letter-spacing:0.2em;color:var(--muted);text-transform:uppercase;margin-bottom:2.2rem;}
-    .hero-intro{text-align:center;margin-bottom:2rem;}
-    .hero-title{font-family:'Exo 2',sans-serif;font-weight:700;font-size:1.6rem;line-height:1.4;letter-spacing:0.02em;color:var(--text);margin:0 0 0.9rem;}
+    .hero-banner-tagline{text-align:center;font-family:'Share Tech Mono',monospace;font-size:0.78rem;letter-spacing:0.12em;color:var(--text-dim);text-transform:uppercase;margin-bottom:0.4rem;}
+    .hero-banner-by{text-align:center;font-family:'Share Tech Mono',monospace;font-size:0.62rem;letter-spacing:0.2em;color:var(--muted);text-transform:uppercase;margin-bottom:2.4rem;}
+    .hero-intro{text-align:center;margin-bottom:2.2rem;}
+    .hero-title{font-family:'Exo 2',sans-serif;font-weight:700;font-size:1.85rem;line-height:1.4;letter-spacing:0.01em;color:var(--text);margin:0 0 1.1rem;}
     .hero-acc{color:var(--accent);}
     .hero-acc2{color:var(--accent2);}
-    .hero-sub{font-family:'Exo 2',sans-serif;font-weight:300;font-size:0.82rem;color:var(--text-dim);line-height:1.8;max-width:640px;margin:0 auto;}
-    .hero-stats{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:2.5rem;}
-    .hero-stat{display:flex;flex-direction:column;align-items:center;padding:10px 20px;background:var(--panel);border:1px solid var(--border);border-radius:6px;min-width:90px;}
-    .hero-stat-num{font-family:'Exo 2',sans-serif;font-weight:700;font-size:1.15rem;color:var(--accent);}
-    .hero-stat-label{font-family:'Share Tech Mono',monospace;font-size:0.52rem;letter-spacing:0.14em;color:var(--muted);text-transform:uppercase;margin-top:3px;}
+    .hero-sub{font-family:'Exo 2',sans-serif;font-weight:400;font-size:0.98rem;color:var(--text-dim);line-height:1.85;max-width:700px;margin:0 auto;}
+    .hero-stats{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-bottom:2.75rem;}
+    .hero-stat{display:flex;flex-direction:column;align-items:center;padding:12px 22px;background:var(--panel);border:1px solid var(--border);border-radius:6px;min-width:96px;}
+    .hero-stat-num{font-family:'Exo 2',sans-serif;font-weight:700;font-size:1.3rem;color:var(--accent);}
+    .hero-stat-label{font-family:'Share Tech Mono',monospace;font-size:0.58rem;letter-spacing:0.13em;color:var(--muted);text-transform:uppercase;margin-top:4px;}
     .hero-cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;}
-    .hero-col{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:1.4rem 1.6rem;}
+    .hero-col{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:1.5rem 1.7rem;}
     .hero-col-wide{grid-column:1/-1;margin-bottom:20px;}
-    .hero-col-title{font-family:'Share Tech Mono',monospace;font-weight:600;font-size:0.62rem;letter-spacing:0.18em;color:var(--accent);text-transform:uppercase;margin:0 0 1rem;padding-left:10px;border-left:2px solid var(--accent);}
-    .hero-steps{list-style:none;display:flex;flex-direction:column;gap:0.85rem;counter-reset:hs;margin:0;padding:0;}
-    .hero-steps li{font-family:'Exo 2',sans-serif;font-size:0.74rem;color:var(--text-dim);line-height:1.7;padding-left:1.6rem;position:relative;counter-increment:hs;}
-    .hero-steps li::before{content:counter(hs);position:absolute;left:0;top:0;width:1.15rem;height:1.15rem;border:1px solid var(--accent);border-radius:50%;color:var(--accent);font-family:'Share Tech Mono',monospace;font-size:0.58rem;display:flex;align-items:center;justify-content:center;}
+    .hero-col-title{font-family:'Share Tech Mono',monospace;font-weight:600;font-size:0.66rem;letter-spacing:0.16em;color:var(--accent);text-transform:uppercase;margin:0 0 1.1rem;padding-left:10px;border-left:2px solid var(--accent);}
+    .hero-steps{list-style:none;display:flex;flex-direction:column;gap:1rem;counter-reset:hs;margin:0;padding:0;}
+    .hero-steps li{font-family:'Exo 2',sans-serif;font-size:0.88rem;color:var(--text-dim);line-height:1.75;padding-left:1.7rem;position:relative;counter-increment:hs;}
+    .hero-steps li::before{content:counter(hs);position:absolute;left:0;top:1px;width:1.25rem;height:1.25rem;border:1px solid var(--accent);border-radius:50%;color:var(--accent);font-family:'Share Tech Mono',monospace;font-size:0.6rem;display:flex;align-items:center;justify-content:center;}
     .hero-steps li strong{color:var(--text);}
-    .hero-shortcuts{display:flex;flex-direction:column;gap:0.9rem;}
-    .hero-shortcut-row{display:flex;flex-direction:column;gap:2px;}
-    .hsr-label{font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:0.08em;color:var(--accent2);text-transform:uppercase;}
-    .hero-shortcut-row span:last-child{font-family:'Exo 2',sans-serif;font-size:0.72rem;color:var(--text-dim);line-height:1.6;}
-    .hero-feature-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
-    .hero-feature{background:var(--panel-alt);border:1px solid var(--border);border-radius:6px;padding:12px 14px;font-family:'Exo 2',sans-serif;font-size:0.7rem;color:var(--text-dim);line-height:1.6;}
-    .hero-feature strong{display:block;color:var(--text);font-weight:600;font-size:0.72rem;margin-bottom:4px;}
-    .hero-keys-note{font-family:'Exo 2',sans-serif;font-size:0.72rem;color:var(--muted);line-height:1.7;margin-bottom:0.8rem;}
+    .hero-shortcuts{display:flex;flex-direction:column;gap:1.1rem;}
+    .hero-shortcut-row{display:flex;flex-direction:column;gap:4px;}
+    .hsr-label{font-family:'Share Tech Mono',monospace;font-size:0.64rem;letter-spacing:0.08em;color:var(--accent2);text-transform:uppercase;}
+    .hero-shortcut-row span:last-child{font-family:'Exo 2',sans-serif;font-size:0.86rem;color:var(--text-dim);line-height:1.7;}
+    .hero-feature-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+    .hero-feature{background:var(--panel-alt);border:1px solid var(--border);border-radius:6px;padding:14px 16px;font-family:'Exo 2',sans-serif;font-size:0.84rem;color:var(--text-dim);line-height:1.7;}
+    .hero-feature strong{display:block;color:var(--text);font-weight:600;font-size:0.88rem;margin-bottom:5px;}
+    .hero-keys-note{font-family:'Exo 2',sans-serif;font-size:0.86rem;color:var(--muted);line-height:1.75;margin-bottom:0.9rem;}
     .hero-key-links{display:flex;gap:14px;flex-wrap:wrap;}
-    .hero-key-links a{font-family:'Share Tech Mono',monospace;font-size:0.68rem;letter-spacing:0.06em;color:var(--accent2);border:1px solid var(--border);border-radius:4px;padding:6px 14px;text-decoration:none;transition:0.15s;}
+    .hero-key-links a{font-family:'Share Tech Mono',monospace;font-size:0.74rem;letter-spacing:0.05em;color:var(--accent2);border:1px solid var(--border);border-radius:4px;padding:7px 16px;text-decoration:none;transition:0.15s;}
     .hero-key-links a:hover{border-color:var(--accent2);background:rgba(88,166,255,0.06);}
     .hero-cta-row{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-top:1rem;}
-    .btn-hero-cta{font-family:'Share Tech Mono',monospace;font-size:0.68rem;letter-spacing:0.12em;color:#080c14;background:var(--accent);border:none;border-radius:5px;padding:12px 28px;cursor:pointer;text-decoration:none;display:inline-block;font-weight:700;transition:0.15s;}
+    .btn-hero-cta{font-family:'Share Tech Mono',monospace;font-size:0.72rem;letter-spacing:0.1em;color:#080c14;background:var(--accent);border:none;border-radius:5px;padding:13px 30px;cursor:pointer;text-decoration:none;display:inline-block;font-weight:700;transition:0.15s;}
     .btn-hero-cta:hover{opacity:0.88;}
     .btn-hero-cta-alt{background:transparent;color:var(--accent);}
     @media(max-width:768px){
       .hero-cols{grid-template-columns:1fr;}
       .hero-feature-grid{grid-template-columns:1fr;}
-      .hero-banner{font-size:1.8rem;}
-      .hero-title{font-size:1.3rem;}
+      .hero-banner{font-size:1.9rem;}
+      .hero-title{font-size:1.4rem;}
+      .hero-sub{font-size:0.9rem;}
     }
 
     /* FOOTER */
-    .po-footer{border-top:1px solid var(--border);padding:1rem 2rem;font-family:'Share Tech Mono',monospace;font-size:0.56rem;color:var(--muted);letter-spacing:0.08em;}
+    .site-footer{border-top:1px solid var(--border);margin-top:32px;padding:8px 28px;position:relative;z-index:1;}
+    .footer-inner{position:relative;max-width:1700px;margin:0 auto;display:flex;align-items:center;gap:12px;font-family:'Exo 2',sans-serif;font-size:0.62rem;color:var(--muted);flex-wrap:wrap;}
+    .footer-brand{color:var(--accent);text-decoration:none;transition:color 0.15s;}
+    .footer-brand:hover{color:var(--accent2);}
+    .footer-project{color:var(--accent2);}
+    .footer-sep{color:var(--border);}
+    .footer-src-list{display:flex;flex:1 1 100%;max-width:100%;flex-wrap:wrap;align-items:center;gap:5px;font-family:'Share Tech Mono',monospace;letter-spacing:0.02em;}
+    .footer-src-sep{color:var(--border);margin:0 1px;}
+    .footer-credit-row{display:flex;justify-content:center;margin-top:16px;}
+    .footer-credit-pill{display:inline-flex;flex-wrap:nowrap;align-items:center;gap:6px;padding:4px 12px;border:1px solid var(--border);border-radius:999px;text-decoration:none;font-family:'Exo 2',sans-serif;font-weight:500;font-size:0.62rem;white-space:nowrap;transition:border-color 0.15s;}
+    .footer-credit-pill:hover{border-color:var(--accent);}
+    .footer-credit-pill .credit-tool{font-weight:700;letter-spacing:2px;}
+    .footer-credit-pill .credit-by{color:var(--muted);}
+    .footer-credit-pill .credit-name{color:var(--accent);font-weight:700;letter-spacing:0.5px;}
+    @media(max-width:640px){.footer-inner{flex-wrap:wrap;gap:8px;font-size:10px;}}
 
     /* RESPONSIVE */
     @media(max-width:1100px){
@@ -322,6 +340,7 @@
     @media(max-width:640px){
       .nav-links{display:none;}
       .hamburger{display:flex;}
+      .view-tabs{display:none;}
     }
 
     /* 480px — phone */
@@ -339,8 +358,6 @@
       .btn-copy-iocs,.btn-export{padding:9px 10px;}
       .section-label{font-size:0.58rem;padding:2px 8px;}
       .escalation-box{padding:8px 10px;}
-      /* mode bar wrapping */
-      div[style*="position:fixed"][style*="top:48px"]{flex-wrap:wrap;height:auto!important;padding:6px 1rem;gap:4px;}
     }
 
     /* 375px — small phone */
@@ -421,13 +438,25 @@
       <div class="nav-divider"></div>
       <a href="mailto:h3adsec@gmail.com">CONTACT</a>
     </div>
-    <div class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
-      <div class="toggle-track"><div class="toggle-thumb"></div></div>
+    <div class="nav-right">
+      <div class="view-tabs" id="viewTabs">
+        <button class="view-tab" data-view="overview" onclick="switchView('overview')">OVERVIEW</button>
+        <button class="view-tab active" data-view="workspace" onclick="switchView('workspace')">MANUAL TRACKER</button>
+        <a class="view-tab" href="./auto.html">AUTO SCAN</a>
+      </div>
+      <div class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <div class="toggle-track"><div class="toggle-thumb"></div></div>
+      </div>
     </div>
   </nav>
 
   <!-- MOBILE DRAWER -->
   <div class="nav-drawer" id="navDrawer">
+    <div class="drawer-view-tabs">
+      <button class="view-tab" data-view="overview" onclick="switchView('overview');closeDrawer();">OVERVIEW</button>
+      <button class="view-tab active" data-view="workspace" onclick="switchView('workspace');closeDrawer();">MANUAL</button>
+      <a class="view-tab" href="./auto.html">AUTO</a>
+    </div>
     <a href="https://h3ad-sec.github.io" onclick="closeDrawer()">HOME</a>
     <a href="https://h3ad-sec.github.io/H3AD/" onclick="closeDrawer()">H3AD</a>
     <a href="https://h3ad-sec.github.io/H3AD-X/" onclick="closeDrawer()">H3AD-X</a>
@@ -451,15 +480,6 @@
     <a href="https://h3ad-sec.github.io/H3AD-IR/" onclick="closeDrawer()">H3AD-IR</a>
     <a href="https://h3ad-sec.github.io/H3AD-LEARN/" onclick="closeDrawer()">H3AD-LEARN</a>
     <a href="mailto:h3adsec@gmail.com" onclick="closeDrawer()">CONTACT</a>
-  </div>
-
-  <!-- MODE BAR -->
-  <div style="position:fixed;top:48px;left:0;right:0;z-index:90;background:var(--panel);border-bottom:1px solid var(--border);height:36px;display:flex;align-items:center;padding:0 1.5rem;gap:4px;">
-    <div class="view-tabs" id="viewTabs">
-      <button class="view-tab" data-view="overview" onclick="switchView('overview')">OVERVIEW</button>
-      <button class="view-tab active" data-view="workspace" onclick="switchView('workspace')">MANUAL TRACKER</button>
-      <a class="view-tab" href="./auto.html">AUTO SCAN</a>
-    </div>
   </div>
 
   <!-- OVERVIEW -->
@@ -568,6 +588,7 @@
       <div class="ioc-actions">
         <button class="btn-copy-iocs" onclick="copyIOCs()">COPY ALL IOCs</button>
         <button class="btn-export" onclick="exportSummary()">EXPORT SUMMARY</button>
+        <button class="btn-export" onclick="downloadSummary()">DOWNLOAD SUMMARY (.MD)</button>
       </div>
     </aside>
   </div>
@@ -589,12 +610,28 @@
       <div class="ioc-sections" id="iocSectionsMobile" style="flex:1;overflow-y:auto;padding:0 1rem;"></div>
       <div class="ioc-actions">
         <button class="btn-copy-iocs" onclick="copyIOCs()">COPY ALL IOCs</button>
+        <button class="btn-export" onclick="downloadSummary()">DOWNLOAD SUMMARY (.MD)</button>
       </div>
     </div>
   </div>
   </div><!-- /view-workspace -->
 
-  <footer class="po-footer">H3AD-SEC &middot; PHISHOPS</footer>
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <a href="https://h3ad-sec.github.io" class="footer-brand">H3AD-SEC</a>
+      <span class="footer-sep">/</span>
+      <span class="footer-project">PHISHOPS</span>
+      <span class="footer-sep">//</span>
+      <span class="footer-muted">Phishing Investigation Tracker.</span>
+    </div>
+    <div class="footer-credit-row">
+      <a class="footer-credit-pill" href="https://www.linkedin.com/in/hrushikesh-badgujar/" target="_blank" rel="noopener" title="Connect on LinkedIn">
+        <span class="credit-tool"><span class="xv-pill-accent">PHISH</span><span class="xv-pill-text">OPS</span></span>
+        <span class="credit-by">created by</span>
+        <span class="credit-name">H3AD</span>
+      </a>
+    </div>
+  </footer>
 
   <script>
     // ── STEPS DATA ──────────────────────────────────────────────────────────────
@@ -1046,7 +1083,7 @@
       }).catch(function() {});
     }
 
-    function exportSummary() {
+    function buildSummaryText() {
       var lines = ['# PHISHOPS Investigation Summary', 'Date: ' + new Date().toISOString().split('T')[0], ''];
       STEPS.forEach(function(step) {
         lines.push('## Step ' + step.num + ': ' + step.name + ' - ' + step.subtitle);
@@ -1073,7 +1110,11 @@
           iocs[s[0]].forEach(function(v) { lines.push('- ' + v); });
         }
       });
-      var text = lines.join('\n');
+      return lines.join('\n');
+    }
+
+    function exportSummary() {
+      var text = buildSummaryText();
       navigator.clipboard.writeText(text).then(function() {
         var btns = document.querySelectorAll('.btn-export');
         btns.forEach(function(b) { b.textContent = 'COPIED ✓'; setTimeout(function() { b.textContent = 'EXPORT SUMMARY'; }, 2000); });
@@ -1081,6 +1122,24 @@
         var w = window.open('', '_blank');
         if (w) { w.document.write('<pre>' + text.replace(/</g,'&lt;') + '</pre>'); w.document.close(); }
       });
+    }
+
+    function downloadFile(content, filename, mimeType) {
+      var blob = new Blob([content], { type: mimeType });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a);
+      setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+    }
+
+    function downloadSummary() {
+      var text = buildSummaryText();
+      var triage = getStepData('triage');
+      var senderPart = (triage.sender && triage.sender.includes('@')) ? triage.sender.split('@')[1].replace(/[^a-z0-9.-]/gi, '') : 'case';
+      var dateTag = new Date().toISOString().split('T')[0];
+      downloadFile(text, 'phishops-summary-' + senderPart + '-' + dateTag + '.md', 'text/markdown;charset=utf-8;');
     }
 
     // ── RESET ───────────────────────────────────────────────────────────────────
