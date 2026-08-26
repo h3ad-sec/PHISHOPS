@@ -12,12 +12,14 @@
   <meta property="og:url" content="https://h3ad-sec.github.io/PHISHOPS/auto.html" />
   <meta property="og:title" content="PHISHOPS Auto Scan: Automated Phishing Email Analysis" />
   <meta property="og:description" content="Drop a raw EML file for automated phishing analysis. Parses headers, URLs, and attachments, computes SHA256 hashes, and enriches every indicator via VirusTotal, URLScan, and RDAP with a computed risk score." />
-  <meta property="og:image" content="https://raw.githubusercontent.com/h3ad-sec/h3ad-sec.github.io/main/logo-dark.png" />
+  <meta property="og:image" content="https://h3ad-sec.github.io/PHISHOPS/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
 
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="PHISHOPS Auto Scan: Automated Phishing Email Analysis" />
   <meta name="twitter:description" content="Drop a raw EML file for automated phishing analysis. Parses headers, URLs, and attachments, computes SHA256 hashes, and enriches every indicator via VirusTotal, URLScan, and RDAP with a computed risk score." />
-  <meta name="twitter:image" content="https://raw.githubusercontent.com/h3ad-sec/h3ad-sec.github.io/main/logo-dark.png" />
+  <meta name="twitter:image" content="https://h3ad-sec.github.io/PHISHOPS/og-image.png" />
 
   <meta name="theme-color" content="#080c14" />
   <link rel="icon" href="https://h3ad-sec.github.io/fevicon.png?v=2026" type="image/png" />
@@ -320,7 +322,7 @@
   <div id="scroll-sentinel" aria-hidden="true"></div>
 
   <nav class="nav">
-    <div class="hamburger" id="hamburger" onclick="toggleDrawer()"><span></span><span></span><span></span></div>
+    <div class="hamburger" id="hamburger" onclick="toggleDrawer()" role="button" tabindex="0" aria-label="Open navigation menu" aria-expanded="false" aria-controls="navDrawer" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleDrawer();}"><span></span><span></span><span></span></div>
     <a class="nav-brand" href="https://h3ad-sec.github.io">
       <img id="navLogo" src="https://raw.githubusercontent.com/h3ad-sec/h3ad-sec.github.io/main/logo-dark.png" alt="H3AD-SEC" />
     </a>
@@ -381,8 +383,8 @@
         <a class="view-tab" href="./index.html">MANUAL TRACKER</a>
         <button class="view-tab active" data-view="workspace" onclick="switchView('workspace')">AUTO SCAN</button>
       </div>
-      <button class="mode-settings" onclick="openSettings()">&#9881; API KEYS</button>
-      <div class="theme-toggle" onclick="toggleTheme()"><div class="toggle-track"><div class="toggle-thumb"></div></div></div>
+      <button class="mode-settings" onclick="openSettings()" title="Manage API keys (press /)">&#9881; API KEYS</button>
+      <div class="theme-toggle" onclick="toggleTheme()" title="Toggle theme" role="button" tabindex="0" aria-label="Toggle light or dark theme" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTheme();}"><div class="toggle-track"><div class="toggle-thumb"></div></div></div>
     </div>
   </nav>
 
@@ -1577,9 +1579,22 @@
   }
 
   // ── NAV / THEME ───────────────────────────────────────────────────────────────
-  function toggleDrawer(){document.getElementById('navDrawer').classList.toggle('open');}
-  function closeDrawer(){document.getElementById('navDrawer').classList.remove('open');}
+  function toggleDrawer(){var open=document.getElementById('navDrawer').classList.toggle('open');document.getElementById('hamburger').setAttribute('aria-expanded',open);}
+  function closeDrawer(){document.getElementById('navDrawer').classList.remove('open');document.getElementById('hamburger').setAttribute('aria-expanded','false');}
   document.addEventListener('click',function(e){var d=document.getElementById('navDrawer'),h=document.getElementById('hamburger');if(d.classList.contains('open')&&!d.contains(e.target)&&!h.contains(e.target))closeDrawer();});
+
+  // ── KEYBOARD SHORTCUTS ──────────────────────────────────────────────────────────
+  document.addEventListener('keydown',function(e){
+    var tag=(e.target.tagName||'').toLowerCase();
+    var typing=tag==='input'||tag==='textarea'||tag==='select';
+    if(e.key==='Escape'){
+      closeSettings();
+      closeDrawer();
+    }else if(e.key==='/'&&!typing){
+      e.preventDefault();
+      openSettings();
+    }
+  });
   function updateLogo(t){var el=document.getElementById('navLogo');if(el)el.src=t==='light'?'https://raw.githubusercontent.com/h3ad-sec/h3ad-sec.github.io/main/logo-light.png':'https://raw.githubusercontent.com/h3ad-sec/h3ad-sec.github.io/main/logo-dark.png';}
   function toggleTheme(){var l=document.body.classList.toggle('light');document.body.classList.toggle('dark',!l);var t=l?'light':'dark';localStorage.setItem('h3ad-theme',t);updateLogo(t);}
   (function(){var t=localStorage.getItem('h3ad-theme');if(t==='light'){document.body.classList.add('light');document.body.classList.remove('dark');updateLogo('light');}else{document.body.classList.add('dark');document.body.classList.remove('light');}})();

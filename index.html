@@ -12,12 +12,14 @@
   <meta property="og:url" content="https://h3ad-sec.github.io/PHISHOPS/" />
   <meta property="og:title" content="PHISHOPS: Phishing Investigation Tracker for SOC Analysts" />
   <meta property="og:description" content="Free phishing investigation tracker for SOC analysts. Guided 7-step workflow from triage to closure, live IOC aggregator, and automated EML scanning with VirusTotal and URLScan enrichment." />
-  <meta property="og:image" content="https://raw.githubusercontent.com/h3ad-sec/h3ad-sec.github.io/main/logo-dark.png" />
+  <meta property="og:image" content="https://h3ad-sec.github.io/PHISHOPS/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
 
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="PHISHOPS: Phishing Investigation Tracker for SOC Analysts" />
   <meta name="twitter:description" content="Free phishing investigation tracker for SOC analysts. Guided 7-step workflow from triage to closure, live IOC aggregator, and automated EML scanning with VirusTotal and URLScan enrichment." />
-  <meta name="twitter:image" content="https://raw.githubusercontent.com/h3ad-sec/h3ad-sec.github.io/main/logo-dark.png" />
+  <meta name="twitter:image" content="https://h3ad-sec.github.io/PHISHOPS/og-image.png" />
 
   <meta name="theme-color" content="#080c14" />
   <link rel="icon" href="https://h3ad-sec.github.io/fevicon.png?v=2026" type="image/png" />
@@ -386,7 +388,7 @@
 
   <!-- NAV -->
   <nav class="nav">
-    <div class="hamburger" id="hamburger" onclick="toggleDrawer()">
+    <div class="hamburger" id="hamburger" onclick="toggleDrawer()" role="button" tabindex="0" aria-label="Open navigation menu" aria-expanded="false" aria-controls="navDrawer" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleDrawer();}">
       <span></span><span></span><span></span>
     </div>
     <a class="nav-brand" href="https://h3ad-sec.github.io">
@@ -450,7 +452,7 @@
         <button class="view-tab active" data-view="workspace" onclick="switchView('workspace')">MANUAL TRACKER</button>
         <a class="view-tab" href="./auto.html">AUTO SCAN</a>
       </div>
-      <div class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+      <div class="theme-toggle" onclick="toggleTheme()" title="Toggle theme" role="button" tabindex="0" aria-label="Toggle light or dark theme" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTheme();}">
         <div class="toggle-track"><div class="toggle-thumb"></div></div>
       </div>
     </div>
@@ -1176,11 +1178,25 @@
     }
 
     // ── NAV ─────────────────────────────────────────────────────────────────────
-    function toggleDrawer() { document.getElementById('navDrawer').classList.toggle('open'); }
-    function closeDrawer() { document.getElementById('navDrawer').classList.remove('open'); }
+    function toggleDrawer() {
+      var open = document.getElementById('navDrawer').classList.toggle('open');
+      document.getElementById('hamburger').setAttribute('aria-expanded', open);
+    }
+    function closeDrawer() {
+      document.getElementById('navDrawer').classList.remove('open');
+      document.getElementById('hamburger').setAttribute('aria-expanded', 'false');
+    }
     document.addEventListener('click', function(e) {
       var d = document.getElementById('navDrawer'), h = document.getElementById('hamburger');
       if (d.classList.contains('open') && !d.contains(e.target) && !h.contains(e.target)) closeDrawer();
+    });
+
+    // ── KEYBOARD SHORTCUTS ──────────────────────────────────────────────────────────
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeIOCModal();
+        closeDrawer();
+      }
     });
 
     // ── THEME ────────────────────────────────────────────────────────────────────
